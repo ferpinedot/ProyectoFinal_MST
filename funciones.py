@@ -347,7 +347,7 @@ def f_clasificacion_ocurrencia(datos):
     datos = f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx',sheet_name = 0)
     """
     ac = datos.actual >= datos.consensus
-    ap = datos.actual > datos.previous # no utilizado. en ningun momento se compara si el actual es mayor o menor al previous
+    #ap = datos.actual > datos.previous # no utilizado. en ningun momento se compara si el actual es mayor o menor al previous
     cp = datos.consensus >= datos.previous
 
     def clasificacion(ac, cp):
