@@ -21,9 +21,12 @@ import pandas as pd
 datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
 vn.v_indicador_orig(datos)
 
+#descargar datos para cada TimeStamp de datos:
+time_delta = pd.to_timedelta('00:30:00')
+granularity = 'M1'
+instrument = "EUR_USD"
 oatk='107596e9d65c' + '1bbc9175953d917140' + '12-f975c6201dddad03ac1592232c0ea0ea'
-print(fn.f_precios_masivos(datos.datetime[0], datos.datetime[0] + pd.to_timedelta('00:30:00'),
-                        'M1', "EUR_USD", oatk,  p5_ginc=4900))
+datos_instrumento = {i : fn.f_precios_masivos(i, i + time_delta, granularity, instrument, oatk,  p5_ginc=4900) for i in datos.datetime}
 
 # Autocorrelación del Indicador
 fac = fn.f_autocorr(datos)

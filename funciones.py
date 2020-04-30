@@ -95,15 +95,16 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
         # Fecha inicial y fecha final
         f1 = p0_fini.strftime('%Y-%m-%dT%H:%M:%S')
         f2 = p1_ffin.strftime('%Y-%m-%dT%H:%M:%S')
-
+        print(f1,f2)
         # Parametros pra la peticion de precios
-        params = {"granularity": p2_gran, "price": "M", "dailyAlignment": 16, "from": f1,
-                  "to": f2}
+#        params = {"granularity": p2_gran, "price": "M", "dailyAlignment": 16, "from": f1,
+#                  "to": f2}
+        params = {"granularity": p2_gran, "price": "M", "from": f1, "to": f2}
 
         # Ejecutar la peticion de precios
         a1_req1 = instruments.InstrumentsCandles(instrument=p3_inst, params=params)
         a1_hist = api.request(a1_req1)
-
+        print(a1_hist)
         # Para debuging
         # print(f1 + ' y ' + f2)
         lista = list()
@@ -190,7 +191,7 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
 #%% Aspecto Matemático
 
 # Lectura del archivo de datos en excel o csv
-def f_leer_archivo(param_archivo, sheet_name = 0):
+def f_leer_archivo(param_archivo, sheet_name = 0, index_col = 0):
     """
     Parameters
     ----------
@@ -205,8 +206,9 @@ def f_leer_archivo(param_archivo, sheet_name = 0):
     """
 
     #df_data = pd.read_csv(param_archivo)
-    df_data = pd.read_excel(param_archivo, sheet_name = 0)
+    df_data = pd.read_excel(param_archivo, sheet_name)
     df_data.columns = [i.lower() for i in list(df_data.columns)]
+    print(df_data)
     return df_data
 
 
@@ -328,4 +330,3 @@ def f_stationarity(datos):
     stty = 'No' if pv > alpha else 'Si'
     return {'Dicky Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterior de información maximizada': icmax, '¿Estacionaria?': stty}
    
-
