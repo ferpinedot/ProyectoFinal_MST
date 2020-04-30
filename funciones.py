@@ -329,4 +329,36 @@ def f_stationarity(datos):
     alpha = 0.05
     stty = 'No' if pv > alpha else 'Si'
     return {'Dicky Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterior de información maximizada': icmax, '¿Estacionaria?': stty}
-   
+
+
+# Clasificación de la ocurrencia para: previous, consensus, actual.
+def f_clasificacion_ocurrencia(datos):
+    """
+    Parameters
+    ----------
+    datos : pd.DataFrame : columnas de preicio actual, consensus y previous del indicador económico seleccionado.
+
+    Returns
+    -------
+    None.
+
+    Debug
+    -----
+    datos = f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx',sheet_name = 0)
+    """
+    ac = datos.actual >= datos.consensus
+    ap = datos.actual > datos.previous # no utilizado. en ningun momento se compara si el actual es mayor o menor al previous
+    cp = datos.consensus >= datos.previous
+
+    def clasificacion(ac, cp):
+        if ac:
+            if cp:
+                return 'A'
+            else:
+                return 'B'
+        elif cp:
+            return 'C'
+        else:
+            return 'D'
+
+    print([clasificacion(i,j) for (i,j) in zip(ac,cp)])
