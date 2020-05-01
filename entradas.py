@@ -9,5 +9,7 @@ Created on Mon Apr 27 14:34:51 2020
 # -- proyecto: Microestructura y Sistemas de Trading - Laboratorio 4 - Proyecto Final
 # -- archivo: entradas.py 
 # -- mantiene: Fernanda Pinedo, Oscar Flores, Francisco Rodriguez
-# -- repositorio: https://github.com/ferpinedot/proyecto_equipo5
+# -- repositorio: https://github.com/OscarFlores-IFi/proyecto_equipo5
 # -- ------------------------------------------------------------------------------------ -- #
+
+alpha = 0.05
