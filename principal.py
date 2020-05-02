@@ -14,11 +14,8 @@ Created on Mon Apr 27 15:28:55 2020
 
 import funciones as fn
 import visualizaciones as vn
-<<<<<<< HEAD
-=======
 import pandas as pd
 import pickle
->>>>>>> b348e6273b8461fd22c8f8ad7cdf94064cf9cb43
 
 # Leer el archivo: Indicador económico USA
 datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
@@ -55,17 +52,12 @@ vn.v_preseasonality(datos)
 vn.v_seasonality(datos)
 
 # Detección de atípicos
-<<<<<<< HEAD
 #atipicos = fn.f_det_atip(datos)
 vn.v_det_atip(datos)
-=======
->>>>>>> b348e6273b8461fd22c8f8ad7cdf94064cf9cb43
 
 
 
 
-<<<<<<< HEAD
-=======
 ########################################################################################################################
 ########################################################################################################################
 # Descargar datos para cada TimeStamp de datos:
@@ -87,6 +79,5 @@ clasificacion = fn.f_clasificacion_ocurrencia(datos)
 
 
 
->>>>>>> b348e6273b8461fd22c8f8ad7cdf94064cf9cb43
 
 
