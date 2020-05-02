@@ -17,6 +17,11 @@ import matplotlib.pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.graphics.tsaplots import plot_pacf
 from statsmodels.graphics.gofplots import qqplot
+from statsmodels.tsa.seasonal import seasonal_decompose
+import pandas as pd
+import statsmodels.api as sm
+from statsmodels.tsa.seasonal import STL
+
 
 
 # Datos a usar para gráficas
@@ -43,8 +48,8 @@ def v_indicador_orig(datos):
     plt.show()
 
 
-# Visualización de autocorrelación
-def v_fac(datos):
+# Visualización de autocorrelación para estacionalidad post-dif
+def v_fac_estac(datos):
     """
     Parameters
     ----------
@@ -56,13 +61,17 @@ def v_fac(datos):
     None.
 
     """
-    serie = datos['actual']
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    serie = datos_dif['actual']
+    serie = serie.reset_index(drop = True)
     plot_acf(serie)
     plt.show()
     
 
-# Visualización de autocorrelación parcial
-def v_facp(datos):
+# Visualización de autocorrelación parcial para estacionalidad post-dif
+def v_facp_estac(datos):
     """
     Parameters
     ----------
@@ -74,12 +83,16 @@ def v_facp(datos):
     None.
 
     """
-    serie = datos['actual']
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    serie = datos_dif['actual']
+    serie = serie.reset_index(drop = True)
     plot_pacf(serie)
     plt.show()
     
     
-# QQ plot de indicador para heteroscedasticidad
+# QQ plot de indicador para distribución normal
 def v_norm_qq(datos):
     """
     Parameters
@@ -120,9 +133,107 @@ def v_norm_hist(datos):
     plt.ylabel('Número de observaciones')
     plt.show()    
     
+# Visualización de autocorrelación
+def v_fac(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    serie = datos['actual']
+    plot_acf(serie)
+    plt.show()
+    
+
+# Visualización de autocorrelación parcial
+def v_facp(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    serie = datos['actual']
+    plot_pacf(serie)
+    plt.show()
+    
+
+ # Estacionalidad   
+def v_preseasonality(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """       
+    serie = datos.set_index('datetime')
+    serie = serie['actual']
+    cycle, trend = sm.tsa.filters.hpfilter(serie, 50)
+    fig, ax = plt.subplots(3,1)
+    ax[0].plot(serie)
+    ax[0].set_title('Interest Rate')
+    ax[1].plot(trend)
+    ax[1].set_title('Trend')
+    ax[2].plot(cycle)
+    ax[2].set_title('Cycle')
+    plt.show()
     
     
-    
+def v_seasonality(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    serie = datos.set_index('datetime')
+    serie = serie['actual']
+    serie = serie.resample('M').mean().ffill()    
+    result = STL(serie).fit()
+    charts = result.plot()
+    plt.show()
+
+# Detección de atípicos
+def v_det_atip(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    datos.plot(x = 'datetime', y = 'actual', kind = 'scatter', color = 'blue')
+    plt.xticks(rotation=45)
+    plt.title('Valor del Indicador')
+    plt.xlabel('tiempo')
+    plt.ylabel('Valor Actual')
+    plt.show()
+
     
     
     
