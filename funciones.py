@@ -17,22 +17,29 @@ import pandas as pd
 import numpy as np
 import pandas_datareader.data as web
 import datos as dt
+import entradas as et
 from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
+#from statsmodels.tsa.stattools import acf
+from statsmodels.stats.diagnostic import het_breuschpagan 
 import statsmodels.stats.diagnostic as smd
-from statsmodels.formula.api import ols
+#from statsmodels.formula.api import OLS
 import scipy.stats
 from scipy.stats import shapiro
 from scipy.stats import normaltest
+from statsmodels.sandbox.stats.diagnostic import acorr_lm
+import statsmodels.sandbox.stats.diagnostic as ssd
+from statsmodels.sandbox.stats.diagnostic import het_arch
+import copy
 
 
 #%% Parte 2: Datos Históricos
-#%% Aspecto Matemático
+#%% Aspecto Matemático/Estadístico
 
 # Lectura del archivo de datos en excel o csv
-def f_leer_archivo(param_archivo, sheet_name = 0, index_col = 0):
+def f_leer_archivo(param_archivo, sheet_name = 0):
     """
     Parameters
     ----------
@@ -47,24 +54,25 @@ def f_leer_archivo(param_archivo, sheet_name = 0, index_col = 0):
     """
 
     #df_data = pd.read_csv(param_archivo)
-    df_data = pd.read_excel(param_archivo, sheet_name)
+    df_data = pd.read_excel(param_archivo, sheet_name = 0)
+    # Volver nombre de columnas a minúsculas
     df_data.columns = [i.lower() for i in list(df_data.columns)]
-    print(df_data)
     return df_data
 
 
 # Autocorrelación
 def f_autocorr(datos):
     """
+    Test de autocorrelación de Ljung-Box
+    
     Parameters
     ----------
-    series : TYPE
-        DESCRIPTION.
+    datos : datos del indicador con el valor actual de la serie
 
     Returns
     -------
-    None.
-
+    Valor del test estadístico de Ljung-Box y P-value del mismo
+    
     """
     # Seleccionar la serie como el valor actual del indicador
     serie = datos['actual']
@@ -73,11 +81,40 @@ def f_autocorr(datos):
     lbva.columns = ['Valor']
     pva = pd.DataFrame(autocorr[1])
     pva.columns = ['Valor']
-    pva = pva.round(5)
+    #pva = pva.round
+    # autocorre = pd.merge(pva, lbva, left_index = True, right_index = True)
+    return {'Valor Test Estadístico' : lbva, 'P-value' : pva.copy()}
 
-    return {'Valor Test Estadístico' : lbva.copy(), 'P-value' : pva.copy()}
+    # from statsmodels.tsa.stattools import acf
+    # serie = datos['actual']
+    # autocorr_ = acf(serie, nlags = None, qstat = True, alpha = 0.05)
+
+
+def f_autocorr_lm(datos):
+    """
+    Test de autocorrelación con los Multiplicadores de Lagrange
     
+    Parameters
+    ----------
+    datos : datos : datos del indicador con el valor actual de la serie
 
+    Returns
+    -------
+    dict : LM : Valor test de Multiplicadores de Lagrange, P-value del mismo
+
+    """
+    serie = datos['actual']
+    acf_lm = ssd.acorr_lm(serie, autolag = 'aic', store = False)
+    lm = acf_lm[0]
+    pva_lm = acf_lm[1]
+    #pva_lm = pva_lm.round(5)
+    fval = acf_lm[2]
+    pva_f = acf_lm[3]
+    #pva_f = pva_f.round(5)
+    autocorr_lm = 'Si' if pva_lm <= et.alpha else 'No'
+    return {'Lagrange Multiplier Value': lm, 'LM P-Value': pva_lm, 'F-Statistic Value': fval, 'F-Statistic P-Value': pva_f, '¿Autocorrelación?': autocorr_lm}
+
+ 
 # Autocorrelación parcial
 def f_autocorr_par(datos):
     """
@@ -91,14 +128,89 @@ def f_autocorr_par(datos):
     None.
     """
     serie = datos['actual']
-    autocorr_par = sm.tsa.stattools.pacf(serie, method = 'yw', alpha = 0.01)
+    autocorr_par = sm.tsa.stattools.pacf(serie, method = 'yw', alpha = et.alpha)
     facp = pd.DataFrame(autocorr_par[0])
     facp.columns = ['Valor']
     facp = facp.round(2)
     int_conf = pd.DataFrame(autocorr_par[1])
     int_conf.columns = ['Límite inferior', 'Límite superior']
+    # autocorr_p = pd.merge(facp, int_conf, left_index = True, right_index = True)
     return {'Autocorrelaciones Parciales': facp.copy(), 'Intervalos de confianza': int_conf.copy()}
+    
 
+# Heterocedasticidad    
+def f_heter_bp(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    serie = datos['actual']
+    indxx = datos.index
+    het_model = sm.OLS(serie, sm.add_constant(indxx)).fit()
+    # heter = het_model.params    
+    resids = het_model.resid
+    het = smd.het_breuschpagan(resids, het_model.model.exog)
+    lm_stat = het[0]
+    pvalue_lm = het[1]
+    f_stat = het[2]
+    pvalue_f = het[3]
+    heteroscedastico = 'Si' if pvalue_f < et.alpha else 'No'
+    return {'Lagrange Multiplier Value': lm_stat, 'LM P-value': pvalue_lm, 'Statistic Value': f_stat, 'F-Statistic P-Value': pvalue_f, '¿Heteroscedástico?': heteroscedastico}
+    
+
+def f_heter_w(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    serie = datos['actual']
+    indxx = datos.index
+    het_model_w = sm.OLS(serie, sm.add_constant(indxx)).fit()
+    resids = het_model_w.resid
+    white_het = smd.het_white(resids, het_model_w.model.exog)
+    lm_stat_w = white_het[0]
+    pvalue_lm_w = white_het[1]
+    f_stat_w = white_het[2]
+    pvalue_f_w = white_het[3]
+    heteroscedastico_w = 'Si' if pvalue_f_w < et.alpha else 'No'
+    return {'Lagrange Multiplier Value': lm_stat_w, 'LM P-value': pvalue_lm_w, 'Statistic Value': f_stat_w, 'F-Statistic P-Value': pvalue_f_w, '¿Heteroscedástico?': heteroscedastico_w}
+
+def f_het_arch(datos):
+    """
+
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    serie = datos['actual']
+    het_ach = ssd.het_arch(serie, nlags = 20, store = False)
+    lm_stat_arch = het_ach[0]
+    pvalue_lm_arch = het_ach[1]
+    f_stat_arch = het_ach[2]
+    pvalue_f_arch = het_ach[3]
+    heteroscedastico_arch = 'Si' if pvalue_f_arch < et.alpha else 'No'
+    return {'Lagrange Multiplier Value': lm_stat_arch, 'LM P-value': pvalue_lm_arch, 'Statistic Value': f_stat_arch, 'F-Statistic P-Value': pvalue_f_arch, '¿Heteroscedástico?': heteroscedastico_arch}
+    
 
 # Prueba de Normalidad
 def f_norm_shw(datos):
@@ -117,8 +229,7 @@ def f_norm_shw(datos):
     norm_shap_w = shapiro(serie)
     stat_shw = norm_shap_w[0]
     pvalue_shw = norm_shap_w[1]
-    alpha = 0.05
-    normal_shw = 'Si' if pvalue_shw > alpha else 'No'
+    normal_shw = 'Si' if pvalue_shw > et.alpha else 'No'
     return {'Statistic Value': stat_shw, 'P-value': pvalue_shw, '¿Normal?': normal_shw}
     
 
@@ -138,10 +249,9 @@ def f_norm_dagp(datos):
     norm_dagp = normaltest(serie)
     stat_dagp = norm_dagp[0]
     pvalue_dagp = norm_dagp[1]
-    alpha = 0.05
-    normal_dagp = 'Si' if pvalue_dagp > alpha else 'No'
+    normal_dagp = 'Si' if pvalue_dagp > et.alpha else 'No'
     return {'Statistic Value': stat_dagp, 'P-value': pvalue_dagp, '¿Normal?': normal_dagp}
-
+    
 
 # Estacionariedad
 def f_stationarity(datos):
@@ -167,9 +277,72 @@ def f_stationarity(datos):
     nob = stc[3]
     cval = stc[4]
     icmax = stc[5] 
-    alpha = 0.05
-    stty = 'No' if pv > alpha else 'Si'
+    stty = 'No' if pv > et.alpha else 'Si'
     return {'Dicky Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterior de información maximizada': icmax, '¿Estacionaria?': stty}
+
+# Diferenciación a la serie de tiempo
+def f_dif_stationary(datos):
+    """
+    En caso de que la serie resulte No Estacionaria se le puede aplicar una 
+    diferenciación para volverla estacionaria
+    
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    stc_dif = sm.tsa.stattools.adfuller(datos_dif['actual'], maxlag = 2, regression = "ct", autolag = 'AIC', store = False, regresults = False)
+    adf = stc_dif[0]
+    pv = stc_dif[1]
+    ul = stc_dif[2]
+    nob = stc_dif[3]
+    cval = stc_dif[4]
+    icmax = stc_dif[5] 
+    stty = 'No' if pv > et.alpha else 'Si'
+    return {'Dicky Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterior de información maximizada': icmax, '¿Estacionaria?': stty}
+   
+
+# #  Transformación logarítmica y diferenciación
+# def f_diff_stationarity(datos):
+#     """
+#     En el caso de que la serie de tiempo no sea Estacionaria y requiera una 
+#     transformación logarítmica y una diferenciación.
+    
+#     Parameters
+#     ----------
+#     datos : TYPE
+#         DESCRIPTION.
+
+#     Returns
+#     -------
+#     None.
+
+#     """
+#     datos = datos.set_index('datetime')
+#     # Transformación logarítmica al df
+#     dats_log = np.log(datos)
+#     dats_log_dif = dats_log - dats_log.shift()
+#     #plt.plot(dats_log_dif)
+
+#     dats_log_dif.dropna(inplace= True)
+#     stc_diff = sm.tsa.stattools.adfuller(dats_log_dif['actual'], maxlag = 2, regression = "ct", autolag = 'AIC', store = False, regresults = False)
+#     adf = stc_diff[0]
+#     pv = stc_diff[1]
+#     ul = stc_diff[2]
+#     nob = stc_diff[3]
+#     cval = stc_diff[4]
+#     icmax = stc_diff[5] 
+#     stty = 'No' if pv > et.alpha else 'Si'
+#     return {'Dicky Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterior de información maximizada': icmax, '¿Estacionaria?': stty}
+
 
 #%% Aspecto computacional
 
@@ -183,30 +356,24 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
     p3_inst
     p4_oatk
     p5_ginc
-
     Returns
     -------
     dc_precios
-
     Debugging
     ---------
-
     """
 
     def f_datetime_range_fx(p0_start, p1_end, p2_inc, p3_delta):
         """
-
         Parameters
         ----------
         p0_start
         p1_end
         p2_inc
         p3_delta
-
         Returns
         -------
         ls_resultado
-
         Debugging
         ---------
         """
@@ -335,11 +502,9 @@ def f_clasificacion_ocurrencia(datos):
     Parameters
     ----------
     datos : pd.DataFrame : columnas de preicio actual, consensus y previous del indicador económico seleccionado.
-
     Returns
     -------
     None.
-
     Debug
     -----
     datos = f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx',sheet_name = 0)
@@ -360,3 +525,15 @@ def f_clasificacion_ocurrencia(datos):
             return 'D'
 
     print([clasificacion(i,j) for (i,j) in zip(ac,cp)])
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
