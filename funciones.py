@@ -23,7 +23,7 @@ import oandapyV20.endpoints.instruments as instruments
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
 #from statsmodels.tsa.stattools import acf
-from statsmodels.stats.diagnostic import het_breuschpagan 
+from statsmodels.stats.diagnostic import het_breuschpagan
 import statsmodels.stats.diagnostic as smd
 #from statsmodels.formula.api import OLS
 import scipy.stats
@@ -47,7 +47,7 @@ def f_leer_archivo(param_archivo, sheet_name = 0):
     Returns
     -------
     df_data : pd.DataFrame : con informacion contenida en archivo leido
-    
+
     Debugging
     ---------
     param_archivo = 'FedInterestRateDecision-UnitedStates.xlsx'
@@ -64,7 +64,7 @@ def f_leer_archivo(param_archivo, sheet_name = 0):
 def f_autocorr(datos):
     """
     Test de autocorrelación de Ljung-Box
-    
+
     Parameters
     ----------
     datos : datos del indicador con el valor actual de la serie
@@ -72,7 +72,7 @@ def f_autocorr(datos):
     Returns
     -------
     Valor del test estadístico de Ljung-Box y P-value del mismo
-    
+
     """
     # Seleccionar la serie como el valor actual del indicador
     serie = datos['actual']
@@ -93,7 +93,7 @@ def f_autocorr(datos):
 def f_autocorr_lm(datos):
     """
     Test de autocorrelación con los Multiplicadores de Lagrange
-    
+
     Parameters
     ----------
     datos : datos : datos del indicador con el valor actual de la serie
@@ -114,7 +114,7 @@ def f_autocorr_lm(datos):
     autocorr_lm = 'Si' if pva_lm <= et.alpha else 'No'
     return {'Lagrange Multiplier Value': lm, 'LM P-Value': pva_lm, 'F-Statistic Value': fval, 'F-Statistic P-Value': pva_f, '¿Autocorrelación?': autocorr_lm}
 
- 
+
 # Autocorrelación parcial
 def f_autocorr_par(datos):
     """
@@ -136,9 +136,9 @@ def f_autocorr_par(datos):
     int_conf.columns = ['Límite inferior', 'Límite superior']
     # autocorr_p = pd.merge(facp, int_conf, left_index = True, right_index = True)
     return {'Autocorrelaciones Parciales': facp.copy(), 'Intervalos de confianza': int_conf.copy()}
-    
 
-# Heterocedasticidad    
+
+# Heterocedasticidad
 def f_heter_bp(datos):
     """
     Parameters
@@ -154,7 +154,7 @@ def f_heter_bp(datos):
     serie = datos['actual']
     indxx = datos.index
     het_model = sm.OLS(serie, sm.add_constant(indxx)).fit()
-    # heter = het_model.params    
+    # heter = het_model.params
     resids = het_model.resid
     het = smd.het_breuschpagan(resids, het_model.model.exog)
     lm_stat = het[0]
@@ -163,7 +163,7 @@ def f_heter_bp(datos):
     pvalue_f = het[3]
     heteroscedastico = 'Si' if pvalue_f < et.alpha else 'No'
     return {'Lagrange Multiplier Value': lm_stat, 'LM P-value': pvalue_lm, 'Statistic Value': f_stat, 'F-Statistic P-Value': pvalue_f, '¿Heteroscedástico?': heteroscedastico}
-    
+
 
 def f_heter_w(datos):
     """
@@ -210,7 +210,7 @@ def f_het_arch(datos):
     pvalue_f_arch = het_ach[3]
     heteroscedastico_arch = 'Si' if pvalue_f_arch < et.alpha else 'No'
     return {'Lagrange Multiplier Value': lm_stat_arch, 'LM P-value': pvalue_lm_arch, 'Statistic Value': f_stat_arch, 'F-Statistic P-Value': pvalue_f_arch, '¿Heteroscedástico?': heteroscedastico_arch}
-    
+
 
 # Prueba de Normalidad
 def f_norm_shw(datos):
@@ -231,7 +231,7 @@ def f_norm_shw(datos):
     pvalue_shw = norm_shap_w[1]
     normal_shw = 'Si' if pvalue_shw > et.alpha else 'No'
     return {'Statistic Value': stat_shw, 'P-value': pvalue_shw, '¿Normal?': normal_shw}
-    
+
 
 def f_norm_dagp(datos):
     """
@@ -245,13 +245,13 @@ def f_norm_dagp(datos):
     None.
 
     """
-    serie = datos['actual']    
+    serie = datos['actual']
     norm_dagp = normaltest(serie)
     stat_dagp = norm_dagp[0]
     pvalue_dagp = norm_dagp[1]
     normal_dagp = 'Si' if pvalue_dagp > et.alpha else 'No'
     return {'Statistic Value': stat_dagp, 'P-value': pvalue_dagp, '¿Normal?': normal_dagp}
-    
+
 
 # Estacionariedad
 def f_stationarity(datos):
@@ -269,23 +269,23 @@ def f_stationarity(datos):
     serie = datos['actual']
     # resultado = adfuller(serie)
     # return {'Dicky Fuller Test Statistic': resultado[0], 'P-Value': resultado[1], 'Valores críticos': resultado[4]}
-    
+
     stc = sm.tsa.stattools.adfuller(serie, maxlag = 2, regression = "ct", autolag = 'AIC', store = False, regresults = False)
     adf = stc[0]
     pv = stc[1]
     ul = stc[2]
     nob = stc[3]
     cval = stc[4]
-    icmax = stc[5] 
+    icmax = stc[5]
     stty = 'No' if pv > et.alpha else 'Si'
     return {'Dicky Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterior de información maximizada': icmax, '¿Estacionaria?': stty}
 
 # Diferenciación a la serie de tiempo
 def f_dif_stationary(datos):
     """
-    En caso de que la serie resulte No Estacionaria se le puede aplicar una 
+    En caso de que la serie resulte No Estacionaria se le puede aplicar una
     diferenciación para volverla estacionaria
-    
+
     Parameters
     ----------
     datos : TYPE
@@ -305,17 +305,17 @@ def f_dif_stationary(datos):
     ul = stc_dif[2]
     nob = stc_dif[3]
     cval = stc_dif[4]
-    icmax = stc_dif[5] 
+    icmax = stc_dif[5]
     stty = 'No' if pv > et.alpha else 'Si'
     return {'Dicky Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterior de información maximizada': icmax, '¿Estacionaria?': stty}
-   
+
 
 # #  Transformación logarítmica y diferenciación
 # def f_diff_stationarity(datos):
 #     """
-#     En el caso de que la serie de tiempo no sea Estacionaria y requiera una 
+#     En el caso de que la serie de tiempo no sea Estacionaria y requiera una
 #     transformación logarítmica y una diferenciación.
-    
+
 #     Parameters
 #     ----------
 #     datos : TYPE
@@ -339,7 +339,7 @@ def f_dif_stationary(datos):
 #     ul = stc_diff[2]
 #     nob = stc_diff[3]
 #     cval = stc_diff[4]
-#     icmax = stc_diff[5] 
+#     icmax = stc_diff[5]
 #     stty = 'No' if pv > et.alpha else 'Si'
 #     return {'Dicky Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterior de información maximizada': icmax, '¿Estacionaria?': stty}
 
@@ -524,9 +524,9 @@ def f_clasificacion_ocurrencia(datos):
         else:
             return 'D'
 
-    print([clasificacion(i,j) for (i,j) in zip(ac,cp)])
-    
-    
+    return [clasificacion(i,j) for (i,j) in zip(ac,cp)] 
+
+
 # Creación de DataFrame con información previa al BackTesting.
 def f_df_escenarios(datos_instrumento, clasificacion):
     """
@@ -571,12 +571,3 @@ def f_df_escenarios(datos_instrumento, clasificacion):
                 index = datos_instrumento.keys())
     dataframe.insert(0, 'escenario', clasificacion)
     return dataframe
-    
-    
-    
-    
-    
-    
-    
-    
-    

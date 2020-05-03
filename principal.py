@@ -7,7 +7,7 @@ Created on Mon Apr 27 15:28:55 2020
 
 # -- ------------------------------------------------------------------------------------ -- #
 # -- proyecto: Microestructura y Sistemas de Trading - Laboratorio 4 - Proyecto Final
-# -- archivo: principal.py 
+# -- archivo: principal.py
 # -- mantiene: Fernanda Pinedo, Oscar Flores, Francisco Rodriguez
 # -- repositorio: https://github.com/OscarFlores-IFi/proyecto_equipo5
 # -- ------------------------------------------------------------------------------------ -- #
@@ -47,7 +47,7 @@ estacionariedad_dif = fn.f_dif_stationary(datos)
 vn.v_fac_estac(datos)
 vn.v_facp_estac(datos)
 
-# Prueba de Estacionalidad 
+# Prueba de Estacionalidad
 vn.v_preseasonality(datos)
 vn.v_seasonality(datos)
 
@@ -76,9 +76,8 @@ except:
 
 # Claisificar las ocurrencias según parámetros; Actual, Consensys, Previous
 clasificacion = fn.f_clasificacion_ocurrencia(datos)
+print(clasificacion)
 
-# DataFrame de escenarios. 
+# DataFrame de escenarios.
 df_escenarios = fn.f_df_escenarios(datos_instrumento, clasificacion)
-
-
-
+print(df_escenarios)
