@@ -77,7 +77,8 @@ except:
 # Claisificar las ocurrencias según parámetros; Actual, Consensys, Previous
 clasificacion = fn.f_clasificacion_ocurrencia(datos)
 
-
+# DataFrame de escenarios. 
+df_escenarios = fn.f_df_escenarios(datos_instrumento, clasificacion)
 
 
 
