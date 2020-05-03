@@ -525,9 +525,52 @@ def f_clasificacion_ocurrencia(datos):
             return 'D'
 
     print([clasificacion(i,j) for (i,j) in zip(ac,cp)])
-
-
     
+    
+# Creación de DataFrame con información previa al BackTesting.
+def f_df_escenarios(datos_instrumento, clasificacion):
+    """
+    Parameters
+    ----------
+    datos_instrumento : dict : diccionario con pd.DataFrame dentro de el. Contiene 30 velas de 1min. con OLHC (open, low, ...)
+    clasificacion : list : contiene la clasificación perteneciente a cada escenario de los indices.
+
+    Returns
+    -------
+    dataframe : pd.DataFrame : con información de dirección, pips bajistas/alcistas y volatilidad.
+    Debug
+    -----
+    datos_instrumento = {i : fn.f_precios_masivos(i, i + time_delta, granularity, instrument, oatk,  p5_ginc=4900)
+                         for i in datos.datetime}
+    clasificacion = fn.f_clasificacion_ocurrencia(datos)
+    """
+
+    def direccion(escenario):
+        # escenario : pd.DataFrame : Contiene las velas de los últimos 30 min. después del índice.
+        if escenario.Close.iloc[-1] >= escenario.Open.iloc[0]:
+            return 1
+        return -1
+
+    def pips_alcistas(escenario, pips_transaccion):
+        # escenario : pd.DataFrame : Contiene las velas de los últimos 30 min. después del índice.
+        # pips_transaccion : int : Multiplicador de pips por diferencia entre tipos de cambio.
+        return (escenario.High.max() - escenario.Open.loc[0]) * pips_transaccion
+
+    def pips_bajistas(escenario, pips_transaccion):
+        # escenario : pd.DataFrame : Contiene las velas de los últimos 30 min. después del índice.
+        # pips_transaccion : int : Multiplicador de pips por diferencia entre tipos de cambio.
+        return (escenario.Open.loc[0] - escenario.Low.min()) * pips_transaccion
+
+    def volatilidad(escenario, pips_transaccion):
+        # escenario : pd.DataFrame : Contiene las velas de los últimos 30 min. después del índice.
+        return (escenario.High.max() - escenario.Low.min()) * pips_transaccion
+
+    df_escenarios = [[direccion(escenario),pips_alcistas(escenario, 10000),pips_bajistas(escenario, 10000),volatilidad(escenario, 10000)] for escenario in datos_instrumento.values()]
+    dataframe = pd.DataFrame(data = df_escenarios,
+                columns = ['direccion', 'pips_alcistas', 'pips_bajistas', 'volatilidad'],
+                index = datos_instrumento.keys())
+    dataframe.insert(0, 'escenario', clasificacion)
+    return dataframe
     
     
     
