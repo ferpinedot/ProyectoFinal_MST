@@ -586,19 +586,19 @@ def f_Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion, posicion = 'compra
             try:
                 if TP.iloc[0] < SL.iloc[0]: # Si se cumple StopLoss lo compara para ver cual se cumple primero
                     return (TP.iloc[0], 'Gain', TakeProfit)
-                return (SL.iloc[0], 'Loss', StopLoss)
+                return (SL.iloc[0], 'Loss', -StopLoss)
             except:
                 return(TP.iloc[0], 'Gain', TakeProfit)
     except:
         try:
             if SL.iloc[0]:
-                return(SL.iloc[0], 'Loss', StopLoss)
+                return(SL.iloc[0], 'Loss',-StopLoss)
         except:
             dif = dato.Close.iloc[-1] - dato.Open.iloc[0]
             if dif > 0:
                 if posicion == 'compra':
                     return(dato.TimeStamp.iloc[-1], 'Gain', dif*pips_transaccion)
-                return(dato.TimeStamp.iloc[-1], 'Loss', dif*pips_transaccion)
-            if posicion == 'compra':
                 return(dato.TimeStamp.iloc[-1], 'Loss', -dif*pips_transaccion)
+            if posicion == 'compra':
+                return(dato.TimeStamp.iloc[-1], 'Loss', dif*pips_transaccion)
             return(dato.TimeStamp.iloc[-1], 'Gain', -dif*pips_transaccion)
