@@ -81,3 +81,13 @@ print(clasificacion)
 # DataFrame de escenarios.
 df_escenarios = fn.f_df_escenarios(datos_instrumento, clasificacion)
 print(df_escenarios)
+
+df_escenarios[df_escenarios.escenario == 'B']
+
+
+#Supongamos la siguiente estrategia dependiendo de cada escenario.
+df_decisiones = pd.DataFrame(data = [['compra', 20, 40, 1000],['venta', 40, 80, 2000]],
+                            index = ['A', 'B'],
+                            columns = ['operacion', 'StopLoss', 'TakeProfit', 'Volume'])
+
+df_decisiones
