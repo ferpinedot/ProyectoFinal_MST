@@ -98,34 +98,5 @@ df_decisiones
 # BackTestingn
 # timestamp escenario operacion volumen resultado pips capital capital_acm
 
-timestamp = []
-operaciones = []
-volumen = []
-resultado = []
-pips = []
 
-pips_transaccion = 10000
-import funciones as fn
-for (dato, clas) in zip(datos_instrumento.items(), clasificacion):
-    posicion = df_decisiones.loc[clas].operacion
-    StopLoss = df_decisiones.loc[clas].StopLoss
-    TakeProfit = df_decisiones.loc[clas].TakeProfit
-    pos_volume = df_decisiones.loc[clas].Volume
-
-    timestamp_cierre_operacion, gain_loss, pips_gl = fn.f_Gain_Loss(dato[1], TakeProfit, StopLoss, pips_transaccion, posicion)
-
-    timestamp.append(dato[0])
-    operaciones.append(posicion)
-    volumen.append(pos_volume)
-    resultado.append(gain_loss)
-    pips.append(pips_gl)
-    #plt.plot(dato[1].iloc[:,1:])
-    #plt.show()
-df_backtest = pd.DataFrame({'escenario': clasificacion,
-                            'operacion': operaciones,
-                            'volumen': volumen,
-                            'resultado': resultado,
-                            'pips': pips}, index = timestamp)
-
-df_backtest
-print(df_backtest)
+print(fn.f_df_backtest(datos_instrumento, clasificacion, df_decisiones))
