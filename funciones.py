@@ -524,7 +524,7 @@ def f_clasificacion_ocurrencia(datos):
         else:
             return 'D'
 
-    return [clasificacion(i,j) for (i,j) in zip(ac,cp)] 
+    return [clasificacion(i,j) for (i,j) in zip(ac,cp)]
 
 
 # Creación de DataFrame con información previa al BackTesting.
@@ -571,3 +571,25 @@ def f_df_escenarios(datos_instrumento, clasificacion):
                 index = datos_instrumento.keys())
     dataframe.insert(0, 'escenario', clasificacion)
     return dataframe
+
+
+def f_Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion):
+    TP = dato.TimeStamp[(dato.High > dato.Open[0]+TakeProfit/pips_transaccion)==True]
+    SL = dato.TimeStamp[(dato.Low < dato.Open[0]-StopLoss/pips_transaccion)==True]
+    try:
+        if TP.iloc[0]: # Se cumple TakeProfit
+            try:
+                if TP.iloc[0] < SL.iloc[0]: # Si se cumple StopLoss lo compara para ver cual se cumple primero
+                    return (TP.iloc[0], 'Gain', TakeProfit)
+                return (SL.iloc[0], 'Loss', StopLoss)
+            except:
+                return(TP.iloc[0], 'Gain', TakeProfit)
+    except:
+        try:
+            if SL.iloc[0]:
+                return(SL.iloc[0], 'Loss', StopLoss)
+        except:
+            dif = dato.Close.iloc[-1] - dato.Open.iloc[0]
+            if dif > 0:
+                return(dato.TimeStamp.iloc[-1], 'Gain', dif*pips_transaccion)
+            return(dato.TimeStamp.iloc[-1], 'Loss', -dif*pips_transaccion)

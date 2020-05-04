@@ -99,42 +99,8 @@ for (dato, clas) in zip(datos_instrumento.items(), clasificacion):
     TakeProfit = 20
     StopLoss =10
     pips_transaccion = 10000
-    timestamp_cierre_operacion, gain_loss, pips_gl = Gain_Loss(dato[1], TakeProfit, StopLoss, pips_transaccion)
+    timestamp_cierre_operacion, gain_loss, pips_gl = fn.f_Gain_Loss(dato[1], TakeProfit, StopLoss, pips_transaccion)
     print(gain_loss, pips_gl)
 
-
-def Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion):
-    TP = dato.TimeStamp[(dato.High > dato.Open[0]+TakeProfit/pips_transaccion)==True]
-    SL = dato.TimeStamp[(dato.Low < dato.Open[0]-StopLoss/pips_transaccion)==True]
-    try:
-        if TP.iloc[0]: # Se cumple TakeProfit
-            try:
-                if TP.iloc[0] < SL.iloc[0]: # Si se cumple StopLoss lo compara para ver cual se cumple primero
-                    return (TP.iloc[0], 'Gain', TakeProfit)
-                return (SL.iloc[0], 'Loss', StopLoss)
-            except:
-                return(TP.iloc[0], 'Gain', TakeProfit)
-    except:
-        try:
-            if SL.iloc[0]:
-                return(SL.iloc[0], 'Loss', StopLoss)
-        except:
-            dif = dato.Close.iloc[-1] - dato.Open.iloc[0]
-            if dif > 0:
-                return(dato.TimeStamp.iloc[-1], 'Gain', dif*pips_transaccion)
-            return(dato.TimeStamp.iloc[-1], 'Loss', -dif*pips_transaccion)
-
-    #print((dato[1].iloc[:,1:] > dato[1].Open[0]+TakeProfit/pips_transaccion).sum(axis=1).sum() > 0)
-
-
-dato[1].TimeStamp.iloc[-1]
-dato[1].Close.iloc[-1] - dato[1].Open.iloc[0]
-(dato[1].TimeStamp[-1], 'Loss', -dif*pips_transaccion)
-SL.iloc[0]
-TP.iloc[0]
-TP.iloc[0] < SL.iloc[0]
-
-
-
-
-plt.plot(dato[1].iloc[:,1:])
+    plt.plot(dato[1].iloc[:,1:])
+    plt.show()
