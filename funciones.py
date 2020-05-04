@@ -573,9 +573,14 @@ def f_df_escenarios(datos_instrumento, clasificacion):
     return dataframe
 
 
-def f_Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion):
-    TP = dato.TimeStamp[(dato.High > dato.Open[0]+TakeProfit/pips_transaccion)==True]
-    SL = dato.TimeStamp[(dato.Low < dato.Open[0]-StopLoss/pips_transaccion)==True]
+def f_Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion, posicion = 'compra'):
+    if posicion == 'compra':
+        TP = dato.TimeStamp[(dato.High > dato.Open[0]+TakeProfit/pips_transaccion)==True]
+        SL = dato.TimeStamp[(dato.Low < dato.Open[0]-StopLoss/pips_transaccion)==True]
+    else:
+        TP = dato.TimeStamp[(dato.Low < dato.Open[0]-StopLoss/pips_transaccion)==True]
+        SL = dato.TimeStamp[(dato.High > dato.Open[0]+TakeProfit/pips_transaccion)==True]
+
     try:
         if TP.iloc[0]: # Se cumple TakeProfit
             try:
@@ -591,5 +596,9 @@ def f_Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion):
         except:
             dif = dato.Close.iloc[-1] - dato.Open.iloc[0]
             if dif > 0:
-                return(dato.TimeStamp.iloc[-1], 'Gain', dif*pips_transaccion)
-            return(dato.TimeStamp.iloc[-1], 'Loss', -dif*pips_transaccion)
+                if posicion == 'compra':
+                    return(dato.TimeStamp.iloc[-1], 'Gain', dif*pips_transaccion)
+                return(dato.TimeStamp.iloc[-1], 'Loss', dif*pips_transaccion)
+            if posicion == 'compra':
+                return(dato.TimeStamp.iloc[-1], 'Loss', -dif*pips_transaccion)
+            return(dato.TimeStamp.iloc[-1], 'Gain', -dif*pips_transaccion)

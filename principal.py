@@ -20,6 +20,8 @@ import pickle
 import matplotlib.pyplot as plt
 # Leer el archivo: Indicador económico USA
 datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
+
+#Graficar indicador
 vn.v_indicador_orig(datos)
 
 # Autocorrelación del Indicador
@@ -93,14 +95,15 @@ df_decisiones = pd.DataFrame(data = [['compra', 20, 40, 1000],['venta', 40, 80, 
 
 df_decisiones
 
-# BackTesting
+# BackTestingn
 # timestamp escenario operacion volumen resultado pips capital capital_acm
+import funciones as fn
 for (dato, clas) in zip(datos_instrumento.items(), clasificacion):
     TakeProfit = 20
-    StopLoss =10
+    StopLoss = 10
     pips_transaccion = 10000
-    timestamp_cierre_operacion, gain_loss, pips_gl = fn.f_Gain_Loss(dato[1], TakeProfit, StopLoss, pips_transaccion)
-    print(gain_loss, pips_gl)
-
+    posicion = 'venta'
+    timestamp_cierre_operacion, gain_loss, pips_gl = fn.f_Gain_Loss(dato[1], TakeProfit, StopLoss, pips_transaccion, posicion)
+    print(gain_loss,pips_gl)
     plt.plot(dato[1].iloc[:,1:])
     plt.show()
