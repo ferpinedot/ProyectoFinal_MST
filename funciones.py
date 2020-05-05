@@ -404,3 +404,184 @@ def f_skewness(datos):
     return {'Nivel de sesgo': skewness, 'Asimétrico?': asimetria, 'Tipo de asimetría si hay': tipo_simetria}
     
 
+    
+    
+    
+################################################################################################################   
+    
+################################################################################################################       
+# Clasificación de la ocurrencia para: previous, consensus, actual.	
+def f_clasificacion_ocurrencia(datos):	
+    """	
+    Parameters	
+    ----------	
+    datos : pd.DataFrame : columnas de preicio actual, consensus y previous del indicador económico seleccionado.	
+    Returns	
+    -------	
+    None.	
+    Debug	
+    -----	
+    datos = f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx',sheet_name = 0)	
+    """	
+    ac = datos.actual >= datos.consensus	
+    #ap = datos.actual > datos.previous # no utilizado. en ningun momento se compara si el actual es mayor o menor al previous	
+    cp = datos.consensus >= datos.previous	
+
+    def clasificacion(ac, cp):	
+        if ac:	
+            if cp:	
+                return 'A'	
+            else:	
+                return 'B'	
+        elif cp:	
+            return 'C'	
+        else:	
+            return 'D'	
+
+    return [clasificacion(i,j) for (i,j) in zip(ac,cp)]	
+
+
+# Creación de DataFrame con información previa al BackTesting.	
+def f_df_escenarios(datos_instrumento, clasificacion):	
+    """	
+    Parameters	
+    ----------	
+    datos_instrumento : dict : diccionario con pd.DataFrame dentro de el. Contiene 30 velas de 1min. con OLHC (open, low, ...)	
+    clasificacion : list : contiene la clasificación perteneciente a cada escenario de los indices.	
+
+
+    Returns	
+    -------	
+    dataframe : pd.DataFrame : con información de dirección, pips bajistas/alcistas y volatilidad.	
+    Debug	
+    -----	
+    datos_instrumento = {i : fn.f_precios_masivos(i, i + time_delta, granularity, instrument, oatk,  p5_ginc=4900)	
+                         for i in datos.datetime}	
+    clasificacion = fn.f_clasificacion_ocurrencia(datos)	
+    """	
+
+    def direccion(escenario):	
+        # escenario : pd.DataFrame : Contiene las velas de los últimos 30 min. después del índice.	
+        if escenario.Close.iloc[-1] >= escenario.Open.iloc[0]:	
+            return 1	
+        return -1	
+
+    def pips_alcistas(escenario, pips_transaccion):	
+        # escenario : pd.DataFrame : Contiene las velas de los últimos 30 min. después del índice.	
+        # pips_transaccion : int : Multiplicador de pips por diferencia entre tipos de cambio.	
+        return (escenario.High.max() - escenario.Open.loc[0]) * pips_transaccion	
+
+    def pips_bajistas(escenario, pips_transaccion):	
+        # escenario : pd.DataFrame : Contiene las velas de los últimos 30 min. después del índice.	
+        # pips_transaccion : int : Multiplicador de pips por diferencia entre tipos de cambio.	
+        return (escenario.Open.loc[0] - escenario.Low.min()) * pips_transaccion	
+
+    def volatilidad(escenario, pips_transaccion):	
+        # escenario : pd.DataFrame : Contiene las velas de los últimos 30 min. después del índice.	
+        return (escenario.High.max() - escenario.Low.min()) * pips_transaccion	
+
+    df_escenarios = [[direccion(escenario),pips_alcistas(escenario, 10000),pips_bajistas(escenario, 10000),volatilidad(escenario, 10000)] for escenario in datos_instrumento.values()]	
+    dataframe = pd.DataFrame(data = df_escenarios,	
+                columns = ['direccion', 'pips_alcistas', 'pips_bajistas', 'volatilidad'],	
+                index = datos_instrumento.keys())	
+    dataframe.insert(0, 'escenario', clasificacion)	
+    return dataframe	
+
+
+def f_Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion, posicion = 'compra'):	
+    """	
+    Parameters	
+    ----------	
+    dato : pd.DataFrame : DataFrame que contiene 30 velas de 1min. con OLHC (open, low, ...)	
+    TakeProfit : int : valor al cuál se espera llegar para recibir ganancias	
+    StopLoss : int : en caso de que las cosas se pongan feas, se vende a este precio.	
+    pips_transaccion : int : multiplicador de pips por diferencia de precios (10000 para EUR_USD)	
+    posicion : 'compra' o 'venta' : habla de la posicion corta/larga que se tiene frente al activo.	
+    Returns	
+    -------	
+    (TimeStamp, 'Gain' o 'Loss', pips) : tupla : hora en la que se toma la acción, si se gana o se pierde y la cantidad ganada/perdida.	
+    Debugging	
+    -----	
+    dato = datos_instrumento.items()[i], donde i pertenece al intervalo [1, n_escenarios]	
+    TakeProfit = 20	
+    StopLoss = 10	
+    pips_transaccion = 10000	
+    posicion = 'compra' o 'venta'	
+    """	
+    if posicion == 'compra':	
+        TP = dato.TimeStamp[(dato.High > dato.Open[0]+TakeProfit/pips_transaccion)==True]	
+        SL = dato.TimeStamp[(dato.Low < dato.Open[0]-StopLoss/pips_transaccion)==True]	
+    else:	
+        TP = dato.TimeStamp[(dato.Low < dato.Open[0]-StopLoss/pips_transaccion)==True]	
+        SL = dato.TimeStamp[(dato.High > dato.Open[0]+TakeProfit/pips_transaccion)==True]	
+
+    try:	
+        if TP.iloc[0]: # Se cumple TakeProfit	
+            try:	
+                if TP.iloc[0] < SL.iloc[0]: # Si se cumple StopLoss lo compara para ver cual se cumple primero	
+                    return (TP.iloc[0], 'Gain', TakeProfit)	
+                return (SL.iloc[0], 'Loss', -StopLoss)	
+            except:	
+                return(TP.iloc[0], 'Gain', TakeProfit)	
+    except:	
+        try:	
+            if SL.iloc[0]:	
+                return(SL.iloc[0], 'Loss',-StopLoss)	
+        except:	
+            dif = dato.Close.iloc[-1] - dato.Open.iloc[0]	
+            if dif > 0:	
+                if posicion == 'compra':	
+                    return(dato.TimeStamp.iloc[-1], 'Gain', dif*pips_transaccion)	
+                return(dato.TimeStamp.iloc[-1], 'Loss', -dif*pips_transaccion)	
+            if posicion == 'compra':	
+                return(dato.TimeStamp.iloc[-1], 'Loss', dif*pips_transaccion)	
+            return(dato.TimeStamp.iloc[-1], 'Gain', -dif*pips_transaccion)	
+
+
+def f_df_backtest(datos_instrumento, clasificacion, df_decisiones, pips_transaccion = 10000):	
+    """	
+    Parameters	
+    ----------	
+    datos_instrumento : dict : diccionario con pd.DataFrame dentro de el. Contiene 30 velas de 1min. con OLHC (open, low, ...)	
+    clasificacion : list : contiene la clasificación perteneciente a cada escenario de los indices.	
+    df_decisiones : pd.DataFrame : Con la información de operación a realizar, volumen, StopLoss y TakeProfit que se utilizarán si ocurre cada escenario de clasificacion	
+    Returns	
+    -------	
+    df_backtest : pd.DataFrame : DataFrame con snapshots de la estrategia financiera simulada.	
+    Debugging	
+    -----	
+    datos_instrumento = {i : fn.f_precios_masivos(i, i + time_delta, granularity, instrument, oatk,  p5_ginc=4900)	
+                         for i in datos.datetime}	
+    clasificacion = fn.f_clasificacion_ocurrencia(datos)	
+    df_decisiones = pd.DataFrame(data = [['compra', 20, 40, 1000],['venta', 40, 80, 2000],['compra', 20, 40, 1000],['venta', 40, 80, 2000]],	
+                                index = ['A', 'B','C','D'],	
+                                columns = ['operacion', 'StopLoss', 'TakeProfit', 'Volume'])  # Estrategia falsa, meramente para probar que backtesting funciona	
+    """	
+    timestamp = []	
+    operaciones = []	
+    volumen = []	
+    resultado = []	
+    pips = []	
+
+    for (dato, clas) in zip(datos_instrumento.items(), clasificacion):	
+        posicion = df_decisiones.loc[clas].operacion	
+        StopLoss = df_decisiones.loc[clas].StopLoss	
+        TakeProfit = df_decisiones.loc[clas].TakeProfit	
+        pos_volume = df_decisiones.loc[clas].Volume	
+
+        timestamp_cierre_operacion, gain_loss, pips_gl = f_Gain_Loss(dato[1], TakeProfit, StopLoss, pips_transaccion, posicion)	
+
+        timestamp.append(dato[0])	
+        operaciones.append(posicion)	
+        volumen.append(pos_volume)	
+        resultado.append(gain_loss)	
+        pips.append(pips_gl)	
+        #plt.plot(dato[1].iloc[:,1:])	
+        #plt.show()	
+    df_backtest = pd.DataFrame({'escenario': clasificacion,	
+                                'operacion': operaciones,	
+                                'volumen': volumen,	
+                                'resultado': resultado,	
+                                'pips': pips}, index = timestamp)	
+
+    return df_backtest
