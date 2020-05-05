@@ -1,12 +1,13 @@
 # Proyecto Final
 Equipo 5: 
-- Oscar Flores @OscarFlores-IFi
-- Fernnada Pinedo @ferpinedot
-- Francisco Rodríguez @FranciscoRodRam
+- Oscar Flores
+- Fernnada Pinedo 
+- Francisco Rodríguez 
 
 ## Se analiza el comportamiento del EUR_USD durante el comunicado del indicador FED INTEREST RATE DECISION de la economía USA
 
 El proyecto a continuación consiste en encontrar la relación entre el indicador económico escogido, y las reacciones del precio de un activo financiero. Para este caso en particular, se escogió el indicador *Fed Interest Rate Decision*, indicador de las tasas de interés de la Reserva Federal de los Estados Unidos; este para poder observar las reacciones y el comportamiento del EUR/USD durante cada comunicado del mismo indicador.
+
 Está compuesto por cuatro etapas, elaboradas por tres integrantes del equipo, en donde cada integrante tiene un perfil diferente, cada uno se encarga de un aspecto diferente del proyecto:
 - *Financiero*: El integrante encargado del aspecto financiero es el que eligió el indicador económico que se utilizó para el proyecto, así como fue su trabajo realizar las validaciones visuales de cuando sucede el indicador, y diseñar la estrategia de administración del capital.
 - *Matemático/Estadístico*: El miembro encargado del aspecto matemático/estadístico se encarga de realizar la caracterización econométrica de la serie de tiempo del indicador escogido por el financiero, realizando así por medio de la metodología Box-Jenkins, pruebas de estacionariedad, autocorrelación, autocorrelación parcial, estacionalidad, heterocedasticidad, normalidad y detección de atípicos.
