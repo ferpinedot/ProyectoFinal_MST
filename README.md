@@ -27,6 +27,13 @@ Por último, la cuarta etapa es el backtest y la optimización de la estrategia,
 
 
 
+Cualquier duda o comentario, no duden en contactarnos:
+
+| Perfil | Nombre | GitHub Username | Correo ITESO |
+|:---: | :-: | :-:| :-:|
+| Financiero | Francisco Ricardo Rodríguez Ramírez | @FranciscoRodRam | if705783@iteso.mx |
+| Matemático/Estadístico | María Fernanda Pinedo Talango | @ferpinedot | if705971@iteso.mx |
+| Programador | Oscar Eduardo Flores Hernández | @OscarFlores-IFi | if715029@iteso.mx |
 
 Todos actualmente estudiantes de la carrera de Ingeniería Financiera en el Instituto Tecnológico de Estudios Superiores de Occidente (ITESO)
 
