@@ -14,24 +14,30 @@ Created on Mon Apr 27 15:28:55 2020
 
 import funciones as fn
 import visualizaciones as vn
-import pandas as pd
-import pickle
 
-import matplotlib.pyplot as plt
 # Leer el archivo: Indicador económico USA
 datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
-
-"""#Graficar indicador
 vn.v_indicador_orig(datos)
+vn.v_rmrdsv(datos)
 
-# Autocorrelación del Indicador
-fac_lb = fn.f_autocorr(datos)
-vn.v_fac(datos)
+# Prueba de Estacionariedad (Dickey-Fuller)
+estacionariedad = fn.f_stationarity(datos)
+estacionariedad_dif = fn.f_dif_stationary(datos)
+vn.v_indicador_dif(datos)
+vn.v_rmrdsv_dif(datos)
+
+# Autocorrelación del Indicador Estacionario
+fac_lb = fn.f_autocorr_lb(datos)
 fac_lm = fn.f_autocorr_lm(datos)
+vn.v_fac_estac(datos)
 
-# Autocorrelación parcial del Indicador
+# Autocorrelación parcial del Indicador Estacionario
 facp = fn.f_autocorr_par(datos)
-vn.v_facp(datos)
+vn.v_facp_estac(datos)
+
+# Prueba de Estacionalidad 
+vn.v_preseasonality(datos)
+vn.v_seasonality(datos)
 
 # Heterocedasticidad del Indicador
 heterocedasticidad_bp = fn.f_heter_bp(datos)
@@ -42,21 +48,11 @@ heterocedasticidad_arch = fn.f_het_arch(datos)
 normalidad_shw = fn.f_norm_shw(datos)
 normalidad_dagp = fn.f_norm_dagp(datos)
 vn.v_norm_hist(datos)
+sesgo = fn.f_skewness(datos)
 vn.v_norm_qq(datos)
 
-# Prueba de Estacionariedad (Dickey-Fuller)
-estacionariedad = fn.f_stationarity(datos)
-estacionariedad_dif = fn.f_dif_stationary(datos)
-vn.v_fac_estac(datos)
-vn.v_facp_estac(datos)
-
-# Prueba de Estacionalidad
-vn.v_preseasonality(datos)
-vn.v_seasonality(datos)
-
 # Detección de atípicos
-#atipicos = fn.f_det_atip(datos)
-vn.v_det_atip(datos)"""
+vn.v_det_at(datos)
 
 
 
