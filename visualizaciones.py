@@ -21,7 +21,10 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 import pandas as pd
 import statsmodels.api as sm
 from statsmodels.tsa.seasonal import STL
-
+import seaborn as sb
+from statsmodels.tsa.arima_model import ARIMA
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
 
 
 # Datos a usar para gráficas
@@ -30,14 +33,15 @@ datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-United
 # Visualización del indicador origial con datos 'actual'
 def v_indicador_orig(datos):
     """
+    Visualización de los datos actuales del indicador
+    
     Parameters
     ----------
-    datos : TYPE
-        DESCRIPTION.
+    datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    None.
+    Gráfica de línea de los valores (%) de las tasas de interés del indicador
 
     """
     datos.plot(x = 'datetime', y = 'actual', kind = 'line', color = 'blue')
@@ -48,17 +52,92 @@ def v_indicador_orig(datos):
     plt.show()
 
 
-# Visualización de autocorrelación para estacionalidad post-dif
+#Visualización del indicador original con media móvil y desviación estándar móvil
+def v_rmrdsv(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    datos = datos.set_index('datetime')
+    serie = datos['actual']
+    rolling_mean = serie.rolling(window = 2).mean()
+    rolling_std = serie.rolling(window = 2).std()
+    plt.plot(serie, color = 'blue', label = 'Valor actual Indicador')
+    plt.plot(rolling_mean, color = 'red', label = 'Media Móvil')
+    plt.plot(rolling_std, color = 'black', label = 'Desviación Estándar Móvil')
+    plt.legend(loc = 'best')
+    plt.title('Indicador con media y desviación estándar móviles')
+    plt.show()
+
+
+# Visualización de serie del Indicador ya diferenciado
+def v_indicador_dif(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    serie = datos_dif['actual']
+    plt.plot(serie, color = 'blue')
+    plt.title('Indicador con una diferencia')
+    plt.show()
+   
+    
+# Visualización de Indicador ya diferenciado con media y varianza móviles
+def v_rmrdsv_dif(datos):
+    """
+    Parameters
+    ----------
+    datos : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    serie = datos_dif['actual']
+    rolling_mean = serie.rolling(window = 2).mean()
+    rolling_std = serie.rolling(window = 2).std()
+    plt.plot(serie, color = 'blue', label = 'Valor actual Indicador')
+    plt.plot(rolling_mean, color = 'red', label = 'Media Móvil')
+    plt.plot(rolling_std, color = 'black', label = 'Desviación Estándar Móvil')
+    plt.legend(loc = 'best')
+    plt.title('Indicador con una diferencia con media y desviación estándar móviles')
+    plt.show()
+    
+    
+# Visualización de autocorrelación para estacionariedad del Indicador post-dif
 def v_fac_estac(datos):
     """
+    Visualización de la prueba de autocorrelación para la estacionariedad después de sacarle una diferencia a los datos
+    
     Parameters
     ----------
-    datos : TYPE
-        DESCRIPTION.
+    datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    None.
+    Gráfica de autocorrelación para datos con una diferenciación
 
     """
     datos = datos.set_index('datetime')
@@ -70,17 +149,18 @@ def v_fac_estac(datos):
     plt.show()
     
 
-# Visualización de autocorrelación parcial para estacionalidad post-dif
+# Visualización de autocorrelación parcial para estacionariedad de Indicador post-dif
 def v_facp_estac(datos):
     """
+    Visualización de la prueba de autocorrelación parcial para la estacionariedad después de sacarle una diferencia a los datos
+    
     Parameters
     ----------
-    datos : TYPE
-        DESCRIPTION.
+    datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    None.
+    Gráfica de autocorrelación parcial para datos con una diferenciación
 
     """
     datos = datos.set_index('datetime')
@@ -90,104 +170,30 @@ def v_facp_estac(datos):
     serie = serie.reset_index(drop = True)
     plot_pacf(serie)
     plt.show()
-    
-    
-# QQ plot de indicador para distribución normal
-def v_norm_qq(datos):
-    """
-    Parameters
-    ----------
-    datos : TYPE
-        DESCRIPTION.
 
-    Returns
-    -------
-    None.
 
-    """
-    serie = datos['actual']
-    qqplot(serie, line = 's')
-    plt.title('QQ plot de Indicador')
-    plt.xlabel('Cuantiles teóricos')
-    plt.ylabel('Cuantiles de muestra')
-    plt.show()
-    
-    
-# Histograma de datos para distribución normal
-def v_norm_hist(datos):
-    """
-    Parameters
-    ----------
-    datos : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    serie = datos['actual']
-    plt.hist(serie)
-    plt.title('Histograma de valores del Indicador')
-    plt.xlabel('Valor actual del Indicador')
-    plt.ylabel('Número de observaciones')
-    plt.show()    
-    
-# Visualización de autocorrelación
-def v_fac(datos):
-    """
-    Parameters
-    ----------
-    datos : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    serie = datos['actual']
-    plot_acf(serie)
-    plt.show()
-    
-
-# Visualización de autocorrelación parcial
-def v_facp(datos):
-    """
-    Parameters
-    ----------
-    datos : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    serie = datos['actual']
-    plot_pacf(serie)
-    plt.show()
-    
-
- # Estacionalidad   
+# Estacionalidad   
 def v_preseasonality(datos):
     """
+    Visualización de la pre-prueba de estacionalidad por medio de gráficas de los datos
+    
     Parameters
     ----------
-    datos : TYPE
-        DESCRIPTION.
+    datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    None.
+    Tres gráficas en una imagen que reflectan parte de la prueba de estacionalidad de los datos
 
     """       
-    serie = datos.set_index('datetime')
-    serie = serie['actual']
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    serie = datos_dif['actual']
     cycle, trend = sm.tsa.filters.hpfilter(serie, 50)
     fig, ax = plt.subplots(3,1)
     ax[0].plot(serie)
-    ax[0].set_title('Interest Rate')
+    ax[0].set_title('Interest Rate actual post-dif')
     ax[1].plot(trend)
     ax[1].set_title('Trend')
     ax[2].plot(cycle)
@@ -197,45 +203,99 @@ def v_preseasonality(datos):
     
 def v_seasonality(datos):
     """
+    Visualización de la prueba de estacionalidad por medio de gráficas de los datos
+    
     Parameters
     ----------
-    datos : TYPE
-        DESCRIPTION.
+    datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    None.
+    Cuatro gráficas en una imagen que reflejan la prueba de estacionalidad de los datos 
 
     """
-    serie = datos.set_index('datetime')
-    serie = serie['actual']
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    serie = datos_dif['actual']
     serie = serie.resample('M').mean().ffill()    
     result = STL(serie).fit()
     charts = result.plot()
     plt.show()
 
-# Detección de atípicos
-def v_det_atip(datos):
+
+# Histograma de datos para distribución normal
+def v_norm_hist(datos):
     """
+    Visualización de la prueba de normalidad para saber si es distribución gaussiana o no
+    
     Parameters
     ----------
-    datos : TYPE
-        DESCRIPTION.
+    datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    None.
+    Gráfica tipo histograma de los datos 
 
     """
-    datos.plot(x = 'datetime', y = 'actual', kind = 'scatter', color = 'blue')
-    plt.xticks(rotation=45)
-    plt.title('Valor del Indicador')
-    plt.xlabel('tiempo')
-    plt.ylabel('Valor Actual')
-    plt.show()
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    serie = datos_dif['actual']
+    plt.hist(serie)
+    plt.title('Histograma de valores del Indicador con diferencia')
+    plt.xlabel('Valor actual del Indicador')
+    plt.ylabel('Número de observaciones')
+    plt.show()  
+    
 
+# QQ plot de indicador para distribución normal
+def v_norm_qq(datos):
+    """
+    Visualización de la prueba de normalidad por medio de gráficas
+    
+    Parameters
+    ----------
+    datos : pd.DataFrame : con información contenida en archivo leido
+
+    Returns
+    -------
+    Gráfica cuantil-cuantil de los datos
+
+    """
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    serie = datos_dif['actual']
+    qqplot(serie, line = 's')
+    plt.title('QQ plot de Indicador con diferencia')
+    plt.xlabel('Cuantiles teóricos')
+    plt.ylabel('Cuantiles de muestra')
+    plt.show()
     
     
+# Detección de atípicos boxplot
+def v_det_at(datos):
+    """
+    Visualización de los datos atípicos por medio de un boxplot 
+    
+    Parameters
+    ----------
+    datos : pd.DataFrame : con información contenida en archivo leido
+
+    Returns
+    -------
+    Gráfica tipo bigote caja (boxplot) para identificar los datos atípicos de los datos actuales del indicador
+
+    """
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    serie = datos_dif['actual']
+    dat_at = sb.boxplot(data = serie, orient = 'v')
+    dat_at.set_title('Datos atípicos del Indicador')
+    dat_at.set_ylabel('Valor actual')
+    plt.show()
     
     
     
