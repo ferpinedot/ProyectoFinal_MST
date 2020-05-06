@@ -12,21 +12,22 @@ Created on Mon Apr 27 15:29:33 2020
 # -- repositorio: https://github.com/OscarFlores-IFi/proyecto_equipo5
 # -- ------------------------------------------------------------------------------------ -- #
 
-import funciones as fn
+
+import funciones_1d as fn
 import matplotlib.pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.graphics.tsaplots import plot_pacf
 from statsmodels.graphics.gofplots import qqplot
-from statsmodels.tsa.seasonal import seasonal_decompose
+# from statsmodels.tsa.seasonal import seasonal_decompose
 import pandas as pd
-import statsmodels.api as sm
+# import statsmodels.api as sm
 from statsmodels.tsa.seasonal import STL
-#import seaborn as sb
+import seaborn as sb
 from statsmodels.tsa.arima_model import ARIMA
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-
+#%%
 # Datos a usar para gráficas
 datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
 
@@ -53,16 +54,16 @@ def v_indicador_orig(datos):
 
 
 #Visualización del indicador original con media móvil y desviación estándar móvil
-def v_rmrdsv(datos):
+def v_rmrdsv_original(datos):
     """
     Parameters
     ----------
-    datos : TYPE
-        DESCRIPTION.
+    datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    None.
+    Gráfica de lpinea de los valores del indicador original junto con su media 
+    y desviación estándar móviles
 
     """
     datos = datos.set_index('datetime')
@@ -82,19 +83,19 @@ def v_indicador_dif(datos):
     """
     Parameters
     ----------
-    datos : TYPE
-        DESCRIPTION.
+    datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    None.
+    Gráfica del indicador ya estacionario, con una diferencia
 
-    """
+    """    
     datos = datos.set_index('datetime')
     datos_dif = datos - datos.shift()
     datos_dif.dropna(inplace= True)
     serie = datos_dif['actual']
     plt.plot(serie, color = 'blue')
+    # plt.title('Indicador con una diferencia')
     plt.title('Indicador con una diferencia')
     plt.show()
    
@@ -104,12 +105,12 @@ def v_rmrdsv_dif(datos):
     """
     Parameters
     ----------
-    datos : TYPE
-        DESCRIPTION.
+    datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    None.
+    Gráfica del indicador ya estacionario, con una diferencia y con media y
+    desviación estándar móviles
 
     """
     datos = datos.set_index('datetime')
@@ -125,7 +126,7 @@ def v_rmrdsv_dif(datos):
     plt.title('Indicador con una diferencia con media y desviación estándar móviles')
     plt.show()
     
-    
+
 # Visualización de autocorrelación para estacionariedad del Indicador post-dif
 def v_fac_estac(datos):
     """
@@ -172,38 +173,39 @@ def v_facp_estac(datos):
     plt.show()
 
 
-# Estacionalidad   
-def v_preseasonality(datos):
+# Visualizaicón de un modelo ARIMA(3,1,3) 
+def v_model_arima_orig(datos):
     """
-    Visualización de la pre-prueba de estacionalidad por medio de gráficas de los datos
-    
     Parameters
     ----------
     datos : pd.DataFrame : con información contenida en archivo leido
 
     Returns
     -------
-    Tres gráficas en una imagen que reflectan parte de la prueba de estacionalidad de los datos
-
-    """       
+    Gráfica del indicador ya estacionario y el modelo ARIMA(3,1,3) ajustado al
+    comportamiento de ese indicador
+    
+    """    
+    datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
     datos = datos.set_index('datetime')
     datos_dif = datos - datos.shift()
     datos_dif.dropna(inplace= True)
-    serie = datos_dif['actual']
-    cycle, trend = sm.tsa.filters.hpfilter(serie, 50)
-    fig, ax = plt.subplots(3,1)
-    ax[0].plot(serie)
-    ax[0].set_title('Interest Rate actual post-dif')
-    ax[1].plot(trend)
-    ax[1].set_title('Trend')
-    ax[2].plot(cycle)
-    ax[2].set_title('Cycle')
+    datos_dif_ac = datos_dif['actual']
+    model = ARIMA(datos_dif_ac, order = (3,1,3))
+    results = model.fit(disp=-1)    
+    predictions_ARIMA_dif = pd.Series(results.fittedvalues, copy=True)
+    predictions_ARIMA_dif_cumsum = predictions_ARIMA_dif.cumsum()
+    plt.plot(datos_dif_ac)
+    plt.plot(predictions_ARIMA_dif_cumsum)
+    plt.title('ARIMA(3,1,3)')
     plt.show()
     
     
+# Visualización de estacionalidad
 def v_seasonality(datos):
     """
-    Visualización de la prueba de estacionalidad por medio de gráficas de los datos
+    Visualización de la prueba de estacionalidad por medio de gráficas de los 
+    datos ya estacionarios
     
     Parameters
     ----------
@@ -211,9 +213,11 @@ def v_seasonality(datos):
 
     Returns
     -------
-    Cuatro gráficas en una imagen que reflejan la prueba de estacionalidad de los datos 
+    Cuatro gráficas en una imagen que reflejan la prueba de estacionalidad de 
+    los datos 
 
     """
+    datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
     datos = datos.set_index('datetime')
     datos_dif = datos - datos.shift()
     datos_dif.dropna(inplace= True)
@@ -222,12 +226,13 @@ def v_seasonality(datos):
     result = STL(serie).fit()
     charts = result.plot()
     plt.show()
-
-
+    
+    
 # Histograma de datos para distribución normal
 def v_norm_hist(datos):
     """
-    Visualización de la prueba de normalidad para saber si es distribución gaussiana o no
+    Visualización de la prueba de normalidad para saber si es distribución 
+    gaussiana o no
     
     Parameters
     ----------
@@ -274,7 +279,7 @@ def v_norm_qq(datos):
     plt.show()
     
     
-# Detección de atípicos boxplot
+# Detección de atípicos boxplot 
 def v_det_at(datos):
     """
     Visualización de los datos atípicos por medio de un boxplot 
@@ -289,6 +294,28 @@ def v_det_at(datos):
 
     """
     datos = datos.set_index('datetime')
+    serie = datos['actual']
+    dat_at = sb.boxplot(data = serie, orient = 'v')
+    dat_at.set_title('Datos atípicos del Indicador')
+    dat_at.set_ylabel('Valor actual')
+    plt.show()
+
+
+def v_det_at_dif(datos):
+    """
+    Visualización de los datos atípicos del indicador estacionario por medio de un boxplot 
+    
+    Parameters
+    ----------
+    datos : pd.DataFrame : con información contenida en archivo leido
+
+    Returns
+    -------
+    Gráfica tipo bigote caja (boxplot) para identificar los datos atípicos de 
+    los datos actuales del indicador ya estacionario
+
+    """
+    datos = datos.set_index('datetime')
     datos_dif = datos - datos.shift()
     datos_dif.dropna(inplace= True)
     serie = datos_dif['actual']
@@ -296,15 +323,5 @@ def v_det_at(datos):
     dat_at.set_title('Datos atípicos del Indicador')
     dat_at.set_ylabel('Valor actual')
     plt.show()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
