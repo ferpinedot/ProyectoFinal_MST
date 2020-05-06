@@ -89,7 +89,7 @@ df_escenarios[df_escenarios.escenario == 'A']
 
 
 #Supongamos la siguiente estrategia dependiendo de cada escenario.
-df_decisiones = pd.DataFrame(data = [['compra', 20, 40, 1000],['venta', 40, 80, 2000],['compra', 20, 40, 1000],['venta', 40, 80, 2000]],
+df_decisiones = pd.DataFrame(data = [['compra',10,25, 10000],['compra', 10, 25, 10000],['compra',10,25, 10000],['venta', 10, 30, 100000]],
                             index = ['A', 'B','C','D'],
                             columns = ['operacion', 'StopLoss', 'TakeProfit', 'Volume'])
 
