@@ -687,7 +687,7 @@ def f_Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion, posicion = 'compra
             return(dato.TimeStamp.iloc[-1], 'Gain', -dif*pips_transaccion)	
 
 # Función de backtesting de estrategia de trading.
-def f_df_backtest(datos_instrumento, clasificacion, df_decisiones, pips_transaccion = 10000):	
+def f_df_backtest(datos_instrumento, clasificacion, df_decisiones, pips_transaccion = 10000, apalancamiento = 100):
     """	
     Parameters	
     ----------	
@@ -710,7 +710,8 @@ def f_df_backtest(datos_instrumento, clasificacion, df_decisiones, pips_transacc
     operaciones = []	
     volumen = []	
     resultado = []	
-    pips = []	
+    pips = []
+    capital = []
 
     for (dato, clas) in zip(datos_instrumento.items(), clasificacion):	
         posicion = df_decisiones.loc[clas].operacion	
@@ -724,13 +725,16 @@ def f_df_backtest(datos_instrumento, clasificacion, df_decisiones, pips_transacc
         operaciones.append(posicion)	
         volumen.append(pos_volume)	
         resultado.append(gain_loss)	
-        pips.append(pips_gl)	
+        pips.append(pips_gl)
+        capital.append(pips_gl*pos_volume/pips_transaccion*apalancamiento)  # Falta ajustar el cálculo de esta variable.
         #plt.plot(dato[1].iloc[:,1:])	
         #plt.show()	
     df_backtest = pd.DataFrame({'escenario': clasificacion,	
                                 'operacion': operaciones,	
                                 'volumen': volumen,	
                                 'resultado': resultado,	
-                                'pips': pips}, index = timestamp)	
+                                'pips': pips,
+                                'capital': capital}, index = timestamp)
+    df_backtest['capital acumulado'] = df_backtest.capital[::-1].cumsum()[::-1]
 
     return df_backtest

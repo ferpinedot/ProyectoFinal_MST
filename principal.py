@@ -93,10 +93,13 @@ df_decisiones = pd.DataFrame(data = [['compra', 20, 40, 1000],['venta', 40, 80, 
                             index = ['A', 'B','C','D'],
                             columns = ['operacion', 'StopLoss', 'TakeProfit', 'Volume'])
 
-df_decisiones
 
-# BackTestingn
+# BackTesting
 # timestamp escenario operacion volumen resultado pips capital capital_acm
+df_backtest = fn.f_df_backtest(datos_instrumento, clasificacion, df_decisiones)
+print(df_backtest)
 
 
-print(fn.f_df_backtest(datos_instrumento, clasificacion, df_decisiones))
+
+
+
