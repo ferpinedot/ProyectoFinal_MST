@@ -743,3 +743,6 @@ def f_df_backtest(datos_instrumento, clasificacion, df_decisiones, pips_transacc
     return df_backtest
 
 
+#################################################################################################
+#################################################################################################
+# Genetic Algorithm.
