@@ -21,10 +21,8 @@ from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
-#from statsmodels.tsa.stattools import acf
 from statsmodels.stats.diagnostic import het_breuschpagan 
 import statsmodels.stats.diagnostic as smd
-#from statsmodels.formula.api import OLS
 import scipy.stats
 from scipy.stats import shapiro
 from scipy.stats import normaltest
@@ -36,6 +34,7 @@ from scipy import stats
 from statsmodels.tsa.arima_model import ARIMA
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
+
 
 #%% Parte 2: Datos Históricos
 #%% Aspecto Matemático/Estadístico
@@ -58,7 +57,6 @@ def f_leer_archivo(param_archivo, sheet_name = 0):
     param_archivo = 'FedInterestRateDecision-UnitedStates.xlsx'
     """
 
-    #df_data = pd.read_csv(param_archivo)
     df_data = pd.read_excel(param_archivo, sheet_name = 0)
     # Volver nombre de columnas a minúsculas
     df_data.columns = [i.lower() for i in list(df_data.columns)]
@@ -80,9 +78,6 @@ def f_stationarity(datos):
 
     """
     serie = datos['actual']
-    # resultado = adfuller(serie)
-    # return {'Dicky Fuller Test Statistic': resultado[0], 'P-Value': resultado[1], 'Valores críticos': resultado[4]}
-    
     stc = sm.tsa.stattools.adfuller(serie, maxlag = 2, regression = "ct", autolag = 'AIC', store = False, regresults = False)
     adf = stc[0]
     pv = stc[1]
@@ -95,7 +90,7 @@ def f_stationarity(datos):
 
 
 # Diferenciación a la serie de tiempo
-def f_dif_stationary(datos):
+def f_dif_stationarity(datos):
     """
     En caso de que la serie resulte No Estacionaria se le puede aplicar una 
     diferenciación para volverla estacionaria
@@ -122,67 +117,7 @@ def f_dif_stationary(datos):
     stty = 'No' if pv > et.alpha else 'Si'
     return {'Dickey Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterio de información maximizada': icmax, '¿Estacionaria?': stty}
    
-
-# #  Transformación logarítmica y diferenciación
-# def f_diff_stationarity(datos):
-#     """
-#     En el caso de que la serie de tiempo no sea Estacionaria y requiera una 
-#     transformación logarítmica y una diferenciación.
     
-#     Parameters
-#     ----------
-#     datos : pd.DataFrame : con información contenida en archivo leido
-
-#     Returns
-#     -------
-#     None.
-
-#     """
-#     datos = datos.set_index('datetime')
-#     # Transformación logarítmica al df
-#     dats_log = np.log(datos)
-#     dats_log_dif = dats_log - dats_log.shift()
-#     #plt.plot(dats_log_dif)
-
-#     dats_log_dif.dropna(inplace= True)
-#     stc_diff = sm.tsa.stattools.adfuller(dats_log_dif['actual'], maxlag = 2, regression = "ct", autolag = 'AIC', store = False, regresults = False)
-#     adf = stc_diff[0]
-#     pv = stc_diff[1]
-#     ul = stc_diff[2]
-#     nob = stc_diff[3]
-#     cval = stc_diff[4]
-#     icmax = stc_diff[5] 
-#     stty = 'No' if pv > et.alpha else 'Si'
-#     return {'Dicky Fuller Test Statistic': adf, 'P-Value': pv, 'Número de rezagos': ul, 'Número de observaciones': nob, 'Valores críticos': cval, 'Criterior de información maximizada': icmax, '¿Estacionaria?': stty}
-
-
-# Autocorrelación Ljunj-Box de datos post-diferencia
-def f_autocorr_lb(datos):
-    """
-    Test de autocorrelación de Ljung-Box
-    
-    Parameters
-    ----------
-    datos : pd.DataFrame : con información contenida en archivo leido
-
-    Returns
-    -------
-    dict : Valor del test estadístico de Ljung-Box y P-value del mismo
-    
-    """
-    datos = datos.set_index('datetime')
-    datos_dif = datos - datos.shift()
-    datos_dif.dropna(inplace= True)
-    serie = datos_dif['actual']
-    autocorr = sm.stats.diagnostic.acorr_ljungbox(serie, lags=None, boxpierce=False)
-    lbva = pd.DataFrame(autocorr[0])
-    lbva.columns = ['Valor']
-    pva = pd.DataFrame(autocorr[1])
-    pva.columns = ['Valor']
-    #pva = pva.round
-    return {'Valor Test Estadístico' : lbva, 'P-value' : pva.copy()}
-
-
 # Autocorrelación Multiplicadores de Lagrange de datos post-diferencia 
 def f_autocorr_lm(datos):
     """
@@ -204,10 +139,8 @@ def f_autocorr_lm(datos):
     acf_lm = ssd.acorr_lm(serie, autolag = 'aic', store = False)
     lm = acf_lm[0]
     pva_lm = acf_lm[1]
-    #pva_lm = pva_lm.round(5)
     fval = acf_lm[2]
     pva_f = acf_lm[3]
-    #pva_f = pva_f.round(5)
     autocorr_lm = 'Si' if pva_lm <= et.alpha else 'No'
     return {'Lagrange Multiplier Value': lm, 'LM P-Value': pva_lm, 'F-Statistic Value': fval, 'F-Statistic P-Value': pva_f, '¿Autocorrelación?': autocorr_lm}
 
@@ -235,11 +168,10 @@ def f_autocorr_par(datos):
     facp = facp.round(2)
     int_conf = pd.DataFrame(autocorr_par[1])
     int_conf.columns = ['Límite inferior', 'Límite superior']
-    # autocorr_p = pd.merge(facp, int_conf, left_index = True, right_index = True)
     return {'Autocorrelaciones Parciales': facp.copy(), 'Intervalos de confianza': int_conf.copy()}
-    
 
-# Heterocedasticidad de Indicador post-dif
+
+# Heterocedasticidad
 def f_heter_bp(datos):
     """
     Prueba Breusch-Pagan de heterocedasticidad 
@@ -255,7 +187,7 @@ def f_heter_bp(datos):
     """
     datos = datos.set_index('datetime')
     datos_dif = datos - datos.shift()
-    datos_dif.dropna(inplace= True)
+    datos_dif.dropna(inplace= True)  
     datos_dif = datos_dif.reset_index() 
     serie = datos_dif['actual']
     indxx = datos_dif.index
@@ -403,7 +335,6 @@ def f_skewness(datos):
     tipo_simetria = 'Positiva' if skewness > 1 else 'Negativa' if skewness < -1 else 'Simétrico'
     return {'Nivel de sesgo': skewness, 'Asimétrico?': asimetria, 'Tipo de asimetría si hay': tipo_simetria}
     
-
     
     
     
