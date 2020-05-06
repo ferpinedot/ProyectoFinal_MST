@@ -100,6 +100,9 @@ df_backtest = fn.f_df_backtest(datos_instrumento, clasificacion, df_decisiones)
 print(df_backtest)
 
 
+# Funcion de utilidad a optimizar: Sharpe ratio
+# Método de optimización: Genético: https://pypi.org/project/pyeasyga/
+
 
 
 
