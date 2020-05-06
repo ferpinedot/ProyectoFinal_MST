@@ -18,30 +18,29 @@ import pandas as pd
 import pickle
 from pyeasyga import pyeasyga
 import numpy as np
+
+
+# Leer el archivo: Indicador económico USA
 datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
-
-
-"""# Leer el archivo: Indicador económico USA
 vn.v_indicador_orig(datos)
-vn.v_rmrdsv(datos)
+vn.v_rmrdsv_original(datos)
 
 # Prueba de Estacionariedad (Dickey-Fuller)
 estacionariedad = fn.f_stationarity(datos)
-estacionariedad_dif = fn.f_dif_stationary(datos)
+estacionariedad_dif = fn.f_dif_stationarity(datos)
 vn.v_indicador_dif(datos)
 vn.v_rmrdsv_dif(datos)
 
-# Autocorrelación del Indicador Estacionario
-fac_lb = fn.f_autocorr_lb(datos)
+# Autocorrelación y autocorrelación parcial
 fac_lm = fn.f_autocorr_lm(datos)
-vn.v_fac_estac(datos)
-
-# Autocorrelación parcial del Indicador Estacionario
 facp = fn.f_autocorr_par(datos)
+vn.v_fac_estac(datos)
 vn.v_facp_estac(datos)
 
-# Prueba de Estacionalidad 
-vn.v_preseasonality(datos)
+# Identificación del modelo ARIMA
+vn.v_model_arima_orig(datos)
+
+# Estacionalidad de Indicador 
 vn.v_seasonality(datos)
 
 # Heterocedasticidad del Indicador
@@ -57,9 +56,7 @@ sesgo = fn.f_skewness(datos)
 vn.v_norm_qq(datos)
 
 # Detección de atípicos
-vn.v_det_at(datos)"""
-
-
+vn.v_det_at(datos)
 
 
 ########################################################################################################################
