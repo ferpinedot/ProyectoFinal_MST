@@ -14,9 +14,13 @@ Created on Mon Apr 27 15:28:55 2020
 
 import funciones as fn
 import visualizaciones as vn
+import pandas as pd
+import pickle
 
-# Leer el archivo: Indicador económico USA
 datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
+
+
+"""# Leer el archivo: Indicador económico USA
 vn.v_indicador_orig(datos)
 vn.v_rmrdsv(datos)
 
@@ -52,7 +56,7 @@ sesgo = fn.f_skewness(datos)
 vn.v_norm_qq(datos)
 
 # Detección de atípicos
-vn.v_det_at(datos)
+vn.v_det_at(datos)"""
 
 
 
