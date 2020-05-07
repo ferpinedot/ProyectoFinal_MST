@@ -13,7 +13,7 @@ Created on Mon Apr 27 15:29:33 2020
 # -- ------------------------------------------------------------------------------------ -- #
 
 
-import funciones_1d as fn
+import funciones as fn
 import matplotlib.pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.graphics.tsaplots import plot_pacf
