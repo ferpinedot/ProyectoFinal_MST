@@ -16,7 +16,7 @@ import funciones as fn
 import visualizaciones as vn
 import pandas as pd
 import pickle
-from pyeasyga import pyeasyga
+# from pyeasyga import pyeasyga
 import numpy as np
 
 
@@ -57,10 +57,14 @@ vn.v_norm_qq(datos)
 
 # Detección de atípicos
 vn.v_det_at(datos)
+vn.v_det_at_dif(datos)
 
-
+#%%
 ########################################################################################################################
 ########################################################################################################################
+
+from pyeasyga import pyeasyga
+
 # Descargar datos para cada TimeStamp de datos:
 time_delta = pd.to_timedelta('00:31:00')
 granularity = 'M1'
