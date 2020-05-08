@@ -37,11 +37,11 @@ facp = fn.f_autocorr_par(datos)
 vn.v_fac_estac(datos)
 vn.v_facp_estac(datos)
 
-# Identificación del modelo ARIMA
-vn.v_model_arima_orig(datos)
-
 # Estacionalidad de Indicador 
 vn.v_seasonality(datos)
+
+# Estimación del modelo ARIMA
+vn.v_model_arima_orig(datos)
 
 # Heterocedasticidad del Indicador
 heterocedasticidad_bp = fn.f_heter_bp(datos)
@@ -54,6 +54,10 @@ normalidad_dagp = fn.f_norm_dagp(datos)
 vn.v_norm_hist(datos)
 sesgo = fn.f_skewness(datos)
 vn.v_norm_qq(datos)
+
+normalidad_residuales = fn.f_norm_resid(datos)
+sesgo_residuales = fn.f_skewness_resid(datos)
+vn.v_norm_resids(datos)
 
 # Detección de atípicos
 vn.v_det_at(datos)
