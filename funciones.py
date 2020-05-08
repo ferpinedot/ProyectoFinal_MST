@@ -139,8 +139,10 @@ def f_autocorr_lm(datos):
     acf_lm = ssd.acorr_lm(serie, autolag = 'aic', store = False)
     lm = acf_lm[0]
     pva_lm = acf_lm[1]
+    #pva_lm = pva_lm.round(5)
     fval = acf_lm[2]
     pva_f = acf_lm[3]
+    #pva_f = pva_f.round(5)
     autocorr_lm = 'Si' if pva_lm <= et.alpha else 'No'
     return {'Lagrange Multiplier Value': lm, 'LM P-Value': pva_lm, 'F-Statistic Value': fval, 'F-Statistic P-Value': pva_f, '¿Autocorrelación?': autocorr_lm}
 
@@ -192,7 +194,6 @@ def f_heter_bp(datos):
     serie = datos_dif['actual']
     indxx = datos_dif.index
     het_model = sm.OLS(serie, sm.add_constant(indxx)).fit()
-    # heter = het_model.params    
     resids = het_model.resid
     het = smd.het_breuschpagan(resids, het_model.model.exog)
     lm_stat = het[0]
@@ -335,6 +336,57 @@ def f_skewness(datos):
     tipo_simetria = 'Positiva' if skewness > 1 else 'Negativa' if skewness < -1 else 'Simétrico'
     return {'Nivel de sesgo': skewness, 'Asimétrico?': asimetria, 'Tipo de asimetría si hay': tipo_simetria}
     
+
+# Prueba de normalidad en residuos
+def f_norm_resid(datos):
+    """
+    Parameters
+    ----------
+    datos : pd.DataFrame : con información contenida en archivo leido
+
+    Returns
+    -------
+    dict : Valores de prueba de normalidad y p-value
+
+    """
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    datos_dif_ac = datos_dif['actual']
+    model = sm.tsa.ARIMA(datos_dif_ac, order = (3,1,3)).fit(disp=False)
+    resid = model.resid
+    norm = normaltest(resid)
+    chi_sq = norm[0]
+    pvalue = norm[1]
+    normal_resid = 'Si' if pvalue > et.alpha else 'No'
+    return {'Chi Squared Test Value': chi_sq, 'P-value': pvalue, '¿Normal?': normal_resid}
+    
+
+# Sesgo en normalidad de residuos
+def f_skewness_resid(datos):
+    """
+    Función para saber el sesgo de la distribución de datos en caso de no tener 
+    una distribución normal
+    
+    Parameters
+    ----------
+    datos : pd.DataFrame : con información contenida en archivo leido
+
+    Returns
+    -------
+    dict : Nivel de sesgo, tipo de asimetría si hay
+
+    """
+    datos = datos.set_index('datetime')
+    datos_dif = datos - datos.shift()
+    datos_dif.dropna(inplace= True)
+    datos_dif_ac = datos_dif['actual']
+    model = sm.tsa.ARIMA(datos_dif_ac, order = (3,1,3)).fit(disp=False)
+    resid = model.resid
+    skewness = stats.skew(resid)
+    asimetria = 'Si' if skewness < -1 or skewness > 1 else 'No'
+    tipo_simetria = 'Positiva' if skewness > 1 else 'Negativa' if skewness < -1 else 'Simétrico'
+    return {'Nivel de sesgo': skewness, 'Asimétrico?': asimetria, 'Tipo de asimetría si hay': tipo_simetria}
     
     
 #%%  
