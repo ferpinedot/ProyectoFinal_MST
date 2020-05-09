@@ -11,19 +11,22 @@ Created on Mon Apr 27 15:28:55 2020
 # -- mantiene: Fernanda Pinedo, Oscar Flores, Francisco Rodriguez
 # -- repositorio: https://github.com/OscarFlores-IFi/proyecto_equipo5
 # -- ------------------------------------------------------------------------------------ -- #
+from time import time
 
 import funciones as fn
 import visualizaciones as vn
 import pandas as pd
 import pickle
 import numpy as np
+import matplotlib.pyplot as plt
+
 from genetico import Genetico
 
 gen = Genetico.genetico
 
 # Leer el archivo: Indicador económico USA
 datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
-vn.v_indicador_orig(datos)
+"""vn.v_indicador_orig(datos)
 vn.v_rmrdsv_original(datos)
 
 # Prueba de Estacionariedad (Dickey-Fuller)
@@ -62,13 +65,11 @@ vn.v_norm_resids(datos)
 
 # Detección de atípicos
 vn.v_det_at(datos)
-vn.v_det_at_dif(datos)
+vn.v_det_at_dif(datos)"""
 
 #%%
 ################################################################################
 ################################################################################
-
-from pyeasyga import pyeasyga
 
 # Descargar datos para cada TimeStamp de datos:
 time_delta = pd.to_timedelta('00:31:00')
@@ -86,12 +87,13 @@ except:
 
 # Claisificar las ocurrencias según parámetros; Actual, Consensys, Previous
 clasificacion = fn.f_clasificacion_ocurrencia(datos)
-print(clasificacion)
+#print(clasificacion)
 
 # DataFrame de escenarios.
 df_escenarios = fn.f_df_escenarios(datos_instrumento, clasificacion)
 
 df_escenarios[df_escenarios.escenario == 'A']
+#print(df_escenarios)
 
 
 #Supongamos la siguiente estrategia dependiendo de cada escenario.
@@ -103,15 +105,16 @@ df_decisiones = pd.DataFrame(data = [['compra',10,25, 10000],['compra', 10, 25, 
 # BackTesting
 # timestamp escenario operacion volumen resultado pips capital capital_acm
 df_backtest = fn.f_df_backtest(datos_instrumento, clasificacion, df_decisiones)
-
+#print(df_backtest)
 
 
 ################################################################################
 ################################################################################
 ################################################################################
 
-# Optimización de ratio de Sharpe usando algorítmo genético de librería pyeasyga.
+# Optimización de ratio de Sharpe usando algorítmo genético creado manualmente
 data = [datos_instrumento, clasificacion]
 
 genetic_filename = 'genetico.sav'
-gen(data, genetic_filename)
+[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(data, genetic_filename)
+plt.plot(hist_mean)

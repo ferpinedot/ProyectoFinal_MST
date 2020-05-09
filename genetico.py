@@ -1,54 +1,75 @@
 class Genetico:
 
-    import pandas as pd
-    import numpy as np
-    from time import time
-    import pickle
-    import funciones as fn
+    def create_first_generation(data, n):
+        import pandas as pd
+        import numpy as np
+        # data debería ser una lista, en la posición [0] contiene la descarga de datos de los instrumentos
+        # en la posición [1] debería tener la clasificación de cada uno de los instrumentos.
+        uniques = pd.unique(data[1])
+        individuos = np.concatenate((np.random.randint(0,2,size=(n,1)),
+                                np.random.randint(0,42,size=(n,1)),
+                                np.random.randint(0,21,size=(n,1)),
+                                np.random.randint(0,2380,size=(n,1))),axis=1)
+
+        if len(uniques) > 1:
+            for _ in range(len(uniques) - 1):
+                individuos = np.concatenate((individuos,
+                            np.concatenate((np.random.randint(0,2,size=(n,1)),
+                                                    np.random.randint(0,42,size=(n,1)),
+                                                    np.random.randint(0,21,size=(n,1)),
+                                                    np.random.randint(0,2380,size=(n,1))),axis=1)),axis = 1)
+        return individuos
 
 
 
-    def fitness(individual, data):
+    def fitness(individual, data, print_backtest = False):
+        import pandas as pd
+        import numpy as np
+
+        import funciones as fn
+
         # individual será uno de los vectores de toma de df_decisiones
         # data es una lista con 2 elementos en el interior;
         # en la posición [0] contiene la descarga de datos de los instrumentos
         # en la posición [1] debería tener la clasificación de cada uno de los instrumentos
         uniques = pd.unique(data[1])
-        indiv = [i[i*4:i*4+4] for i in range(uniques//4)]
+        indiv = [individual[i*4:i*4+4] for i in range(len(individual)//4)]
         decisiones = pd.DataFrame(data= indiv,
                                   index = pd.unique(data[1]),
                                   columns = ['operacion', 'StopLoss', 'TakeProfit', 'Volume'])
         decisiones['operacion'][decisiones['operacion'] == 0] = 'venta'
         decisiones['operacion'][decisiones['operacion'] == 1] = 'compra'
-        print(decisiones)
+        #print(decisiones)
 
         datos_instrumento = data[0]
         clasificacion = data[1]
 
         df_backtest = fn.f_df_backtest(datos_instrumento, clasificacion, decisiones)
-        mean = df_backtest['capital acumulado'].mean()
-        std = df_backtest['capital acumulado'].std()
-        print((mean - 0.003)/std)
-        return (mean - 0.003)/std # 0.003 is the risk free rate for every 1.5 months.
+        if print_backtest:
+            print(df_backtest)
+        ###############################################
+        # calcular rendimientos de capital acumulado
 
-    def create_first_generation(data, n):
-        # data debería ser una lista, en la posición [0] contiene la descarga de datos de los instrumentos
-        # en la posición [1] debería tener la clasificación de cada uno de los instrumentos.
-        uniques = pd.unique(data[1])
-        individuos = np.concatenate((np.random.randint(0,2,size=(n,1)),
-                                np.random.randint(0,1000,size=(n,3))),axis=1)
+        rend = np.log(df_backtest['capital acumulado'][:-1].values/df_backtest['capital acumulado'][1:].values)
+        ###############################################
+        mean = rend.mean()
+        std = rend.std()
+        sharpe = (mean - 0.002)/std # 0.025 / 8.
 
-        if uniques > 1:
-            for _ in range(uniques - 1):
-                individuos = np.concatenate((individuos,
-                            np.concatenate((np.random.randint(0,2,size=(n,1)),
-                            np.random.randint(0,1000,size=(n,3))),axis=1)),
-                            axis = 1)
-        return individuos
+        return (mean,std,sharpe) # 0.003 is the risk free rate for every 1.5 months.
+
+
 
     def genetico(data,save = ''):
+        from time import time
 
+        import pandas as pd
+        import numpy as np
+        import pickle
 
+        import funciones as fn
+
+        t1 = time()
         #func = función a optimizar, esta deberá dar los resultados del vector de decisiones en todas las empresas probadas.
         #C0 = Condicion inicial de los padres. (len(C0)<nvec)
         #csv = datos sobre los cuales se simulará
@@ -61,74 +82,69 @@ class Genetico:
         #C = multiplicador de castigo por desviación estándar
         #rf = tasa libre de riesgo para optimización con respecto al ratio de Sharpe.
         #nombre = texto, nombre que tendrá el archivo en dónde se guardarán los resultados del AG.
+        iteraciones = 4
+        n_vec = 2**6 # número de vectores de toma de decisiones (hijos), tiene que ser potencia de 2.
 
-        t1 = time()
+        decisiones = Genetico.create_first_generation(data, n_vec)
 
-        decisiones = create_first_generation(data)
-
-        decisiones = np.random.randint(-1,2,(n_vec,l_vec)) # Inicial.
-        decisiones[-len(C0):] = C0
+        l_vec = decisiones.shape[1] # longitud de cada uno de los vectores de decisiones.
 
         hist_mean = np.zeros((iteraciones,n_vec//4*5)) # historial de media
         hist_std = np.zeros((iteraciones,n_vec//4*5)) # historial de desviación estandar
-        hist_cal = np.zeros((iteraciones,n_vec//4*5)) # historial de calificaciones
+        hist_sharpe = np.zeros((iteraciones,n_vec//4*5)) # historial de calificaciones
         hist_padres = []
 
-        punt = np.zeros(n_vec//4*5) # puntuaciones de hijos, se sobre-escribe en cada ciclo
+        punt = np.ones(n_vec//4*5)*-100000 # puntuaciones de hijos y padres, se sobre-escribe en cada ciclo
         padres = np.zeros((n_vec//4,l_vec)) # padres, se sobre-escribe en cada ciclo
 
-        #Para castigar y premiar baja desviación de rendimientos.
-        pct_mean = np.zeros(punt.shape)
-        pct_std = np.zeros(punt.shape)
 
-        pct_mean = np.zeros(punt.shape)
-        pct_std = np.zeros(punt.shape)
+        for cic in range(iteraciones): # Generaciones del algorítmo.
 
-
-        for cic in range(iteraciones):
-            t2 = time()
             for i in np.arange(n_vec): ## se simulan todos vectores de decisión para escoger el que de la suma mayor
+                [mu, stdev, sharpe] = Genetico.fitness(decisiones[i],data)
+                #print(mu, stdev, sharpe)
 
-                #######################################################################
-                Sim = func(csv,ndias,model_close,decisiones[i],cetes) #########################
-                pct = Sim[:,1:]/Sim[:,:-1]-1 ##########################################
-                pct = pct.mean(axis=0) ##############################################
-                pct_mean[i] = pct.mean() ########################################## todas las empresas
-                pct_std[i] = pct.std() ############################################
-                #######################################################################
+                hist_mean[cic, i] = mu
+                hist_std[cic, i] = stdev
+                hist_sharpe[cic, i] = sharpe
 
-            # Se da una calificación a cada vector de toma de decisiones.
-            punt[pct_mean<pct_std] = (pct_mean[pct_std>pct_mean]-rf/252)/pct_std[pct_std>pct_mean]
-#            punt = pct_mean-C*pct_std # Se le da una calificación (Vector de calificaciones)
+            # Se toma la calificación de cada vector de toma de decisiones.
+            punt[:n_vec] = hist_sharpe[cic,:n_vec] # Para maximizar con respecto a Sharpe
+            #punt[:n_vec] = hist_mean[cic, :n_vec] # Para maximizar con respecto a rendimientos
 
             # Se escogen los padres.
-            decisiones = np.concatenate((decisiones,padres)) # agregamos los 'padres' de las nuevas generaciones a la lista.
+            selectos = np.concatenate((decisiones,padres)) # agregamos los 'padres' de las nuevas generaciones a la lista.
             indx = np.argsort(punt)[-int(n_vec//4):] # Indice donde se encuentran los mejores padres
-            padres = decisiones[indx] # se escojen los padres
-            pct_mean[-int(n_vec//4):] = pct_mean[indx] # se guarda la media que obtuvieron los padres
-            pct_std[-int(n_vec//4):] = pct_std[indx] # se guarda la desviación que obtuvieron los padres
+            padres = selectos[indx] # se escojen los padres
+            punt[n_vec:] = punt[indx] # se guarda la puntuación de los padres.
+            #print(padres)
+            #print(punt)
+            hist_padres.append(padres)
 
-            hist_mean[cic,:] = pct_mean #se almacena el promedio de los padres para observar avance generacional
-            hist_std[cic,:] = pct_std
-            hist_cal[cic,:] = punt
-
-            # Se mutan los vectores de toma de decisiones
+            # Selección
             decisiones = np.array([[np.random.choice(padres.T[i]) for i in range(l_vec)] for i in range(n_vec)])
-            for k in range(n_vec): ## mutamos la cuarta parte de los dígitos de los n_vec vectores que tenemos.
-                for i in range(int(l_vec//4)):
-                    decisiones[k][np.random.randint(0,l_vec)] = np.random.randint(0,3)-1
 
+            # Mutación
+            prob_mutacion = 0.2
+            mutados = np.random.choice([0,1], p=[1-prob_mutacion, prob_mutacion], size=(n_vec, l_vec))
+            for i in range(len(mutados)):
+                for j in range(len(mutados[0])):
+                    if mutados[i,j]:
+                        if j % 4 == 0:
+                            decisiones[i,j] = np.random.randint(0,2) # compra o venta: 0 o 1
+                        elif j % 4 == 1:
+                            decisiones[i,j] = np.random.randint(0,42) # intervalo de StopLoss entre 0 y 42
+                        elif j % 4 == 2:
+                            decisiones[i,j] = np.random.randint(0,21) # intervalo de TakeProfit entre 0 y 21
+                        else:
+                            decisiones[i,j] = np.random.randint(0,2380) # Volumen de operaciones. En el peor de los casos se pierde 1000 usd. con apalancamiento 100x
             # Para imprimir el proceso del algoritmo genérico en relación al total por simular y el tiempo de cada iteracion.
-            print((np.ceil((1+cic)/iteraciones*1000)/10,time()-t2))
-
-            # Cada 10 iteraciones se guardan los resultados de las simulaciones en un respaldo.
-            resp = 5 #respaldo a cada resp
-            if cic % resp == 0:
-                hist_padres.append(padres)
-                pickle.dump([punt,padres,hist_mean,hist_std,hist_cal,hist_padres],open('tmp.sav','wb'))
-
+            print(punt)
+        print(padres[-1])
+        Genetico.fitness(padres[-1],data,True)
 
         print('tiempo de ejecución en seg.:')
         print(time()-t1)
 
-        pickle.dump([punt,padres,hist_mean,hist_std,hist_cal,hist_padres],open(nombre + '.sav','wb')) # guarda las variables más importantes al finalizar.
+        pickle.dump([punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres],open('padres.sav','wb')) # guarda las variables más importantes al finalizar.
+        return([punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres])
