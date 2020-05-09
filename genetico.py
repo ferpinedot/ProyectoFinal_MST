@@ -8,7 +8,7 @@ class Genetico:
         uniques = pd.unique(data[1])
         individuos = np.concatenate((np.random.randint(0,2,size=(n,1)),
                                 np.random.randint(0,42,size=(n,1)),
-                                np.random.randint(0,21,size=(n,1)),
+                                np.random.randint(0,42,size=(n,1)),
                                 np.random.randint(0,2380,size=(n,1))),axis=1)
 
         if len(uniques) > 1:
@@ -16,7 +16,7 @@ class Genetico:
                 individuos = np.concatenate((individuos,
                             np.concatenate((np.random.randint(0,2,size=(n,1)),
                                                     np.random.randint(0,42,size=(n,1)),
-                                                    np.random.randint(0,21,size=(n,1)),
+                                                    np.random.randint(0,42,size=(n,1)),
                                                     np.random.randint(0,2380,size=(n,1))),axis=1)),axis = 1)
         return individuos
 
@@ -60,7 +60,7 @@ class Genetico:
 
 
 
-    def genetico(data,save = ''):
+    def genetico(data,filename = ''):
         from time import time
 
         import pandas as pd
@@ -82,7 +82,7 @@ class Genetico:
         #C = multiplicador de castigo por desviación estándar
         #rf = tasa libre de riesgo para optimización con respecto al ratio de Sharpe.
         #nombre = texto, nombre que tendrá el archivo en dónde se guardarán los resultados del AG.
-        iteraciones = 4
+        iteraciones = 50
         n_vec = 2**6 # número de vectores de toma de decisiones (hijos), tiene que ser potencia de 2.
 
         decisiones = Genetico.create_first_generation(data, n_vec)
@@ -135,7 +135,7 @@ class Genetico:
                         elif j % 4 == 1:
                             decisiones[i,j] = np.random.randint(0,42) # intervalo de StopLoss entre 0 y 42
                         elif j % 4 == 2:
-                            decisiones[i,j] = np.random.randint(0,21) # intervalo de TakeProfit entre 0 y 21
+                            decisiones[i,j] = np.random.randint(0,42) # intervalo de TakeProfit entre 0 y 21
                         else:
                             decisiones[i,j] = np.random.randint(0,2380) # Volumen de operaciones. En el peor de los casos se pierde 1000 usd. con apalancamiento 100x
             # Para imprimir el proceso del algoritmo genérico en relación al total por simular y el tiempo de cada iteracion.
@@ -146,5 +146,7 @@ class Genetico:
         print('tiempo de ejecución en seg.:')
         print(time()-t1)
 
-        pickle.dump([punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres],open('padres.sav','wb')) # guarda las variables más importantes al finalizar.
+        if filename:
+            pickle.dump([punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres],open( filename,'wb')) # guarda las variables más importantes al finalizar.
+
         return([punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres])
