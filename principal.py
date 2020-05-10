@@ -110,11 +110,49 @@ df_backtest = fn.f_df_backtest(datos_instrumento, clasificacion, df_decisiones)
 
 ################################################################################
 ################################################################################
-################################################################################
 
 # Optimización de ratio de Sharpe usando algorítmo genético creado manualmente
 data = [datos_instrumento, clasificacion]
 
-genetic_filename = 'genetico.sav'
-[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(data, genetic_filename)
-plt.plot(hist_mean)
+filename = 'genetico.sav'
+
+# optimización considerando todo el timepo (no separado Train de Test).
+# EN CASO DE QUE NO EXISTA GENETICO.SAV, EJECUTAR LA SIGUIENTE LINEA:
+[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(data, filename =filename)
+[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = pickle.load(open(filename,'rb'))
+plt.plot(hist_sharpe[:,-8:]) # Grafica los mejores 8 padres después de entrenarlos
+
+################################################################################
+################################################################################
+# Separar datos para train/Test
+training_ratio = 0.9 # Entrenamos el 70 % de los datos.
+train_data_timestamps = datos[round(len(datos_instrumento)*(1-training_ratio)):].datetime
+test_data_timestamps = datos[0:round(len(datos_instrumento)*(1-training_ratio))].datetime
+
+training_data = { i: datos_instrumento[i] for i in train_data_timestamps }
+testing_data = { i: datos_instrumento[i] for i in test_data_timestamps }
+
+training_clasification = fn.f_clasificacion_ocurrencia(datos[round(len(datos_instrumento)*(1-training_ratio)):])
+testing_clasification = fn.f_clasificacion_ocurrencia(datos[:round(len(datos_instrumento)*(1-training_ratio))])
+
+# Optimización de ratio de Sharpe usando algorítmo genético creado manualmente
+train_data = [training_data, training_clasification]
+
+filename = 'genetico2.sav'
+
+# optimización de periodo de training.
+# EN CASO DE QUE NO EXISTA GENETICO.SAV, EJECUTAR LA SIGUIENTE LINEA:
+[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(train_data, filename = filename)
+[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = pickle.load(open(filename,'rb'))
+plt.plot(hist_sharpe[:,-8:]) # Grafica los mejores 8 padres después del entrenamiento.
+
+seleccionado = padres[-1]
+seleccionado
+df_decisiones = pd.DataFrame(data = [seleccionado],
+                            index = ['A'],
+                            columns = ['operacion', 'StopLoss', 'TakeProfit', 'Volume'])
+df_decisiones['operacion'][df_decisiones['operacion']==1] = 'compra'
+df_decisiones['operacion'][df_decisiones['operacion']==0] = 'venta'
+print(df_decisiones)
+df_backtest = fn.f_df_backtest(testing_data, testing_clasification, df_decisiones)
+print(df_backtest)

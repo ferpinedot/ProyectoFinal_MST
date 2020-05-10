@@ -7,17 +7,17 @@ class Genetico:
         # en la posición [1] debería tener la clasificación de cada uno de los instrumentos.
         uniques = pd.unique(data[1])
         individuos = np.concatenate((np.random.randint(0,2,size=(n,1)),
-                                np.random.randint(0,42,size=(n,1)),
-                                np.random.randint(0,42,size=(n,1)),
-                                np.random.randint(0,2380,size=(n,1))),axis=1)
+                                np.random.randint(1,42,size=(n,1)),
+                                np.random.randint(1,42,size=(n,1)),
+                                np.random.randint(1,2380,size=(n,1))),axis=1)
 
         if len(uniques) > 1:
             for _ in range(len(uniques) - 1):
                 individuos = np.concatenate((individuos,
                             np.concatenate((np.random.randint(0,2,size=(n,1)),
-                                                    np.random.randint(0,42,size=(n,1)),
-                                                    np.random.randint(0,42,size=(n,1)),
-                                                    np.random.randint(0,2380,size=(n,1))),axis=1)),axis = 1)
+                                                    np.random.randint(1,42,size=(n,1)),
+                                                    np.random.randint(1,42,size=(n,1)),
+                                                    np.random.randint(1,2380,size=(n,1))),axis=1)),axis = 1)
         return individuos
 
 
@@ -60,7 +60,7 @@ class Genetico:
 
 
 
-    def genetico(data,filename = ''):
+    def genetico(data,iteraciones = 30, n_vec = 2**6, filename = ''):
         from time import time
 
         import pandas as pd
@@ -82,14 +82,13 @@ class Genetico:
         #C = multiplicador de castigo por desviación estándar
         #rf = tasa libre de riesgo para optimización con respecto al ratio de Sharpe.
         #nombre = texto, nombre que tendrá el archivo en dónde se guardarán los resultados del AG.
-        iteraciones = 50
-        n_vec = 2**6 # número de vectores de toma de decisiones (hijos), tiene que ser potencia de 2.
+        # número de vectores de toma de decisiones (hijos), tiene que ser potencia de 2.
 
         decisiones = Genetico.create_first_generation(data, n_vec)
 
         l_vec = decisiones.shape[1] # longitud de cada uno de los vectores de decisiones.
 
-        hist_mean = np.zeros((iteraciones,n_vec//4*5)) # historial de media
+        hist_mean = np.ones((iteraciones,n_vec//4*5))*(-10000) # historial de media
         hist_std = np.zeros((iteraciones,n_vec//4*5)) # historial de desviación estandar
         hist_sharpe = np.zeros((iteraciones,n_vec//4*5)) # historial de calificaciones
         hist_padres = []
@@ -117,6 +116,9 @@ class Genetico:
             indx = np.argsort(punt)[-int(n_vec//4):] # Indice donde se encuentran los mejores padres
             padres = selectos[indx] # se escojen los padres
             punt[n_vec:] = punt[indx] # se guarda la puntuación de los padres.
+            hist_mean[cic,n_vec:] = hist_mean[cic,:][indx]
+            hist_std[cic,n_vec:] = hist_mean[cic,:][indx]
+            hist_sharpe[cic,n_vec:] = hist_mean[cic,:][indx]
             #print(padres)
             #print(punt)
             hist_padres.append(padres)
@@ -133,11 +135,11 @@ class Genetico:
                         if j % 4 == 0:
                             decisiones[i,j] = np.random.randint(0,2) # compra o venta: 0 o 1
                         elif j % 4 == 1:
-                            decisiones[i,j] = np.random.randint(0,42) # intervalo de StopLoss entre 0 y 42
+                            decisiones[i,j] = np.random.randint(1,42) # intervalo de StopLoss entre 0 y 42
                         elif j % 4 == 2:
-                            decisiones[i,j] = np.random.randint(0,42) # intervalo de TakeProfit entre 0 y 21
+                            decisiones[i,j] = np.random.randint(1,42) # intervalo de TakeProfit entre 0 y 21
                         else:
-                            decisiones[i,j] = np.random.randint(0,2380) # Volumen de operaciones. En el peor de los casos se pierde 1000 usd. con apalancamiento 100x
+                            decisiones[i,j] = np.random.randint(1,2380) # Volumen de operaciones. En el peor de los casos se pierde 1000 usd. con apalancamiento 100x
             # Para imprimir el proceso del algoritmo genérico en relación al total por simular y el tiempo de cada iteracion.
             print(punt)
         print(padres[-1])
