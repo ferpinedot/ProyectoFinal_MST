@@ -1,7 +1,7 @@
 class Genetico:
     # -- ------------------------------------------------------------------------------------ -- #
     # -- proyecto: Microestructura y Sistemas de Trading - Laboratorio 4 - Proyecto Final
-    # -- archivo: procesos.py 
+    # -- archivo: procesos.py
     # -- mantiene: Fernanda Pinedo, Oscar Flores, Francisco Rodriguez
     # -- repositorio: https://github.com/OscarFlores-IFi/proyecto_equipo5
     # -- ------------------------------------------------------------------------------------ -- #
@@ -67,7 +67,7 @@ class Genetico:
 
 
 
-    def genetico(data,iteraciones = 30, n_vec = 2**6, filename = ''):
+    def genetico(data,iteraciones = 50, n_vec = 2**6, filename = ''):
         from time import time
 
         import pandas as pd
@@ -100,7 +100,10 @@ class Genetico:
         hist_sharpe = np.zeros((iteraciones,n_vec//4*5)) # historial de calificaciones
         hist_padres = []
 
-        punt = np.ones(n_vec//4*5)*-50 # puntuaciones de hijos y padres, se sobre-escribe en cada ciclo
+        punt_mu = np.zeros(n_vec//4*5) # puntuaciones de hijos y padres, se sobre-escribe en cada ciclo
+        punt_std = np.zeros(n_vec//4*5)
+        punt_sharpe = np.ones(n_vec//4*5)*-50
+
         padres = np.zeros((n_vec//4,l_vec)) # padres, se sobre-escribe en cada ciclo
 
 
@@ -110,24 +113,26 @@ class Genetico:
                 [mu, stdev, sharpe] = Genetico.fitness(decisiones[i],data)
                 #print(mu, stdev, sharpe)
 
-                hist_mean[cic, i] = mu
-                hist_std[cic, i] = stdev
-                hist_sharpe[cic, i] = sharpe
+                punt_mu[i] = mu # puntuaciones de hijos y padres, se sobre-escribe en cada ciclo
+                punt_std[i] = stdev
+                punt_sharpe[i] = sharpe
 
-            # Se toma la calificación de cada vector de toma de decisiones.
-            punt[:n_vec] = hist_sharpe[cic,:n_vec] # Para maximizar con respecto a Sharpe
-            #punt[:n_vec] = hist_mean[cic, :n_vec] # Para maximizar con respecto a rendimientos
+            # Se escogen los padres basados en el sharpe.
+            indx = np.argsort(punt_sharpe)[-int(n_vec//4):] # basados en Sharpe
+            # indx = np.argsort(punt_mu)[-int(n_vec//4):] # basados en media
 
-            # Se escogen los padres.
             selectos = np.concatenate((decisiones,padres)) # agregamos los 'padres' de las nuevas generaciones a la lista.
-            indx = np.argsort(punt)[-int(n_vec//4):] # Indice donde se encuentran los mejores padres
             padres = selectos[indx] # se escojen los padres
-            punt[n_vec:] = punt[indx] # se guarda la puntuación de los padres.
-            hist_mean[cic,n_vec:] = hist_mean[cic,:][indx]
-            hist_std[cic,n_vec:] = hist_mean[cic,:][indx]
-            hist_sharpe[cic,n_vec:] = hist_mean[cic,:][indx]
-            #print(padres)
-            #print(punt)
+
+            punt_mu[n_vec:] = punt_mu[indx] # se guarda la puntuación de los padres.
+            punt_std[n_vec:] = punt_std[indx]
+            punt_sharpe[n_vec:] = punt_sharpe[indx]
+
+            hist_mean[cic,:] = punt_mu
+            hist_std[cic,:] = punt_std
+            hist_sharpe[cic,:] = punt_sharpe
+            print(punt_sharpe[-16:])
+
             hist_padres.append(padres)
 
             # Selección
@@ -148,7 +153,6 @@ class Genetico:
                         else:
                             decisiones[i,j] = np.random.randint(1,2380) # Volumen de operaciones. En el peor de los casos se pierde 1000 usd. con apalancamiento 100x
             # Para imprimir el proceso del algoritmo genérico en relación al total por simular y el tiempo de cada iteracion.
-            print(punt)
         print(padres[-1])
         Genetico.fitness(padres[-1],data,True)
 
@@ -156,6 +160,6 @@ class Genetico:
         print(time()-t1)
 
         if filename:
-            pickle.dump([punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres],open( filename,'wb')) # guarda las variables más importantes al finalizar.
+            pickle.dump([padres,hist_mean,hist_std,hist_sharpe,hist_padres],open( filename,'wb')) # guarda las variables más importantes al finalizar.
 
-        return([punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres])
+        return([padres,hist_mean,hist_std,hist_sharpe,hist_padres])

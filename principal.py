@@ -81,6 +81,7 @@ try:
     datos_instrumento = pickle.load(open('precios.sav','rb'))
 except:
     # Si no tenemos los datos descargados, los descargamos y los guardamos.
+    print('no se pudo cargar archivos de pickle, se descargarán todos nuevamente.')
     datos_instrumento = {i : fn.f_precios_masivos(i, i + time_delta, granularity, instrument, oatk,  p5_ginc=4900)
                          for i in datos.datetime}
     pickle.dump(datos_instrumento, open('precios.sav','wb'))
@@ -118,8 +119,8 @@ filename = 'genetico.sav'
 
 # optimización considerando todo el timepo (no separado Train de Test).
 # EN CASO DE QUE NO EXISTA GENETICO.SAV, EJECUTAR LA SIGUIENTE LINEA:
-[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(data, filename =filename)
-[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = pickle.load(open(filename,'rb'))
+[padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(data, filename =filename)
+[padres,hist_mean,hist_std,hist_sharpe,hist_padres] = pickle.load(open(filename,'rb'))
 plt.plot(hist_sharpe[:,-8:]) # Grafica los mejores 8 padres después de entrenarlos
 
 ################################################################################
@@ -142,8 +143,8 @@ filename = 'genetico2.sav'
 
 # optimización de periodo de training.
 # EN CASO DE QUE NO EXISTA GENETICO.SAV, EJECUTAR LA SIGUIENTE LINEA:
-[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(train_data, filename = filename)
-[punt,padres,hist_mean,hist_std,hist_sharpe,hist_padres] = pickle.load(open(filename,'rb'))
+[padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(train_data, filename = filename)
+[padres,hist_mean,hist_std,hist_sharpe,hist_padres] = pickle.load(open(filename,'rb'))
 plt.plot(hist_sharpe[:,-8:]) # Grafica los mejores 8 padres después del entrenamiento.
 
 seleccionado = padres[-1]
