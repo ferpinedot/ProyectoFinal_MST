@@ -20,7 +20,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
-from genetico import Genetico
+from procesos import Genetico
 
 gen = Genetico.genetico
 
