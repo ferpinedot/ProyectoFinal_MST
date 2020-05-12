@@ -1,11 +1,18 @@
-class Genetico:
-    # -- ------------------------------------------------------------------------------------ -- #
-    # -- proyecto: Microestructura y Sistemas de Trading - Laboratorio 4 - Proyecto Final
-    # -- archivo: procesos.py
-    # -- mantiene: Fernanda Pinedo, Oscar Flores, Francisco Rodriguez
-    # -- repositorio: https://github.com/OscarFlores-IFi/proyecto_equipo5
-    # -- ------------------------------------------------------------------------------------ -- #
+# -*- coding: utf-8 -*-
+"""
+Created on Mon May 11 15:28:55 2020
 
+@author: User
+"""
+
+# -- ------------------------------------------------------------------------------------ -- #
+# -- proyecto: Microestructura y Sistemas de Trading - Laboratorio 4 - Proyecto Final
+# -- archivo: procesos.py
+# -- mantiene: Fernanda Pinedo, Oscar Flores, Francisco Rodriguez
+# -- repositorio: https://github.com/OscarFlores-IFi/proyecto_equipo5
+# -- ------------------------------------------------------------------------------------ -- #
+
+class Genetico:
 
     def create_first_generation(data, n):
         import pandas as pd
