@@ -18,7 +18,6 @@ import matplotlib.pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.graphics.tsaplots import plot_pacf
 from statsmodels.graphics.gofplots import qqplot
-# from statsmodels.tsa.seasonal import seasonal_decompose
 import pandas as pd
 import statsmodels.api as sm
 from statsmodels.tsa.seasonal import STL
