@@ -67,6 +67,7 @@ vn.v_norm_resids(datos)
 vn.v_det_at(datos)
 vn.v_det_at_dif(datos)
 
+
 #%%
 ################################################################################
 ################################################################################
@@ -130,22 +131,28 @@ training_ratio = 0.9 # Entrenamos el 70 % de los datos.
 train_data_timestamps = datos[round(len(datos_instrumento)*(1-training_ratio)):].datetime
 test_data_timestamps = datos[0:round(len(datos_instrumento)*(1-training_ratio))].datetime
 
+
 training_data = { i: datos_instrumento[i] for i in train_data_timestamps }
 testing_data = { i: datos_instrumento[i] for i in test_data_timestamps }
+
 
 training_clasification = fn.f_clasificacion_ocurrencia(datos[round(len(datos_instrumento)*(1-training_ratio)):])
 testing_clasification = fn.f_clasificacion_ocurrencia(datos[:round(len(datos_instrumento)*(1-training_ratio))])
 
+
 # Optimización de ratio de Sharpe usando algorítmo genético creado manualmente
 train_data = [training_data, training_clasification]
 
+
 filename = 'genetico2.sav'
 
-# optimización de periodo de training.
+
+# Optimización de periodo de training.
 # EN CASO DE QUE NO EXISTA GENETICO.SAV, EJECUTAR LA SIGUIENTE LINEA:
 [padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(train_data, filename = filename)
 [padres,hist_mean,hist_std,hist_sharpe,hist_padres] = pickle.load(open(filename,'rb'))
 plt.plot(hist_sharpe[:,-8:]) # Grafica los mejores 8 padres después del entrenamiento.
+
 
 seleccionado = padres[-1]
 seleccionado
