@@ -357,4 +357,28 @@ def v_det_at_dif(datos):
     dat_at.set_title('Datos atípicos del Indicador')
     dat_at.set_ylabel('Valor actual')
     plt.show() 
+
+
+def v_hist_sharpe(hist_sharpe):
+    """
+    Parameters
+    ----------
+    hist_sharpe : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    plt.plot(hist_sharpe[:,-16:])
+    plt.title('Gráfica de convergencia')
+    plt.xlabel('Número de iteraciones')
+    plt.ylabel('Valor Sharpe')
+    plt.show()
+    
+    
+    
+    
+    
     
