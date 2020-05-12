@@ -543,6 +543,7 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
 
         return r_df_final
 
+
 # Clasificación de la ocurrencia para: previous, consensus, actual.
 def f_clasificacion_ocurrencia(datos):
     """
@@ -572,6 +573,7 @@ def f_clasificacion_ocurrencia(datos):
             return 'D'
 
     return [clasificacion(i,j) for (i,j) in zip(ac,cp)]
+
 
 # Creación de DataFrame con información previa al BackTesting.
 def f_df_escenarios(datos_instrumento, clasificacion):
@@ -618,6 +620,7 @@ def f_df_escenarios(datos_instrumento, clasificacion):
                 index = datos_instrumento.keys())
     dataframe.insert(0, 'escenario', clasificacion)
     return dataframe
+
 
 # Función de ganancia o perdida
 def f_Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion, posicion = 'compra'):
@@ -668,6 +671,7 @@ def f_Gain_Loss(dato, TakeProfit, StopLoss, pips_transaccion, posicion = 'compra
             if posicion == 'compra':
                 return(dato.TimeStamp.iloc[-1], 'Loss', dif*pips_transaccion)
             return(dato.TimeStamp.iloc[-1], 'Gain', -dif*pips_transaccion)
+
 
 # Función de backtesting de estrategia de trading.
 def f_df_backtest(datos_instrumento, clasificacion, df_decisiones, pips_transaccion = 10000, apalancamiento = 100, monto_inicial = 100000):
@@ -734,4 +738,4 @@ def f_df_backtest(datos_instrumento, clasificacion, df_decisiones, pips_transacc
 
 #################################################################################################
 #################################################################################################
-# Genetic Algorithm.
+# Genetic Algorithm
