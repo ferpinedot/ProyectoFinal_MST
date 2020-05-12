@@ -164,3 +164,6 @@ df_decisiones['operacion'][df_decisiones['operacion']==0] = 'venta'
 print(df_decisiones)
 df_backtest = fn.f_df_backtest(testing_data, testing_clasification, df_decisiones)
 print(df_backtest)
+
+# Gráfica de convergencia 
+vn.v_hist_sharpe(hist_sharpe)
