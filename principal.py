@@ -26,7 +26,7 @@ gen = Genetico.genetico
 
 # Leer el archivo: Indicador económico USA
 datos = fn.f_leer_archivo(param_archivo='archivos/FedInterestRateDecision-UnitedStates.xlsx', sheet_name= 0)
-"""vn.v_indicador_orig(datos)
+vn.v_indicador_orig(datos)
 vn.v_rmrdsv_original(datos)
 
 # Prueba de Estacionariedad (Dickey-Fuller)
@@ -65,7 +65,7 @@ vn.v_norm_resids(datos)
 
 # Detección de atípicos
 vn.v_det_at(datos)
-vn.v_det_at_dif(datos)"""
+vn.v_det_at_dif(datos)
 
 #%%
 ################################################################################
