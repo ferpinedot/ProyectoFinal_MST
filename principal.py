@@ -167,3 +167,4 @@ print(df_backtest)
 
 # Gráfica de convergencia 
 vn.v_hist_sharpe(hist_sharpe)
+vn.capital_backtest(df_backtest)

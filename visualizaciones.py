@@ -377,8 +377,48 @@ def v_hist_sharpe(hist_sharpe):
     plt.ylabel('Valor Sharpe')
     plt.show()
     
+def capital_backtest(df_backtest):
+    """
+    
+
+    Parameters
+    ----------
+    param_data : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    df_data = pd.DataFrame(df_backtest['capital acumulado'])
+    plt.plot(df_data)
+    plt.title('Capital acumulado Backtest')
+    plt.ylabel('Capital')
+    plt.xlabel('Año')
+    plt.show()
+
     
     
     
+def capital_prueba(df_prueba):
+    """
     
+
+    Parameters
+    ----------
+    param_data : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+   # df_data = pd.DataFrame(df_prueba['capital acumulado'])
+   # plt.plot(df_data)
+   # plt.title('Capital acumulado Backtest')
+   # plt.ylabel('Capital')
+   # plt.xlabel('Año')
+   # plt.show()
     
