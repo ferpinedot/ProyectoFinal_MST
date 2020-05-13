@@ -739,3 +739,101 @@ def f_df_backtest(datos_instrumento, clasificacion, df_decisiones, pips_transacc
 #################################################################################################
 #################################################################################################
 # Genetic Algorithm
+#%%
+def f_stat_mad(df_backtest, df_prueba):
+    """
+    Parameters
+    ----------
+    df_backtest : pd.dataframe : datos de backtest
+    df_prueba : pd.dataframe : datos de prueba
+
+    Returns
+    -------
+    mad : dataframe : dataframe con valores de las métricas de atribución al desempeño para la estrategia optimizada
+
+    """
+    
+    # Backtest
+
+    # Sharpe ratio 
+    rend_log_bt = np.log(df_backtest['capital acumulado'][:-1].values/df_backtest['capital acumulado'][1:].values)
+    rf = 0.002
+    # Numerador
+    sharpe_num_bt = rend_log_bt.mean() - rf
+    # Denominador
+    sharpe_denom_bt = rend_log_bt.std()
+    # Final
+    sharpe_bt = sharpe_num_bt / sharpe_denom_bt
+    
+    # Sortino compra backtest
+    # Numerador
+    s_buy_bt = df_backtest.loc[df_backtest['operacion'] == 'compra']
+    rend_log_b_bt = np.log(s_buy_bt['capital acumulado'][:-1].values / s_buy_bt['capital acumulado'][1:].values)
+    # Denominador
+    tdd_sb_bt = rend_log_b_bt - rf
+    tdd_sb_bt[tdd_sb_bt > 0] = 0
+    # Final
+    sortino_b_bt = (rend_log_b_bt.mean() - rf) / (((tdd_sb_bt*2).mean())*0.5)
+    
+    # Sortino venta backtest 
+    s_sell_bt = df_backtest.loc[df_backtest['operacion'] == 'venta'] 
+    rend_log_s_bt = np.log(s_sell_bt['capital acumulado'][:-1].values / s_sell_bt['capital acumulado'][1:].values)     
+    # Denominador
+    tdd_ss_bt = rend_log_s_bt - rf
+    tdd_ss_bt[tdd_ss_bt > 0] = 0
+    # Final
+    sortino_s_bt = (rend_log_s_bt.mean() - rf) / (((tdd_ss_bt*2).mean())*0.5)
+       
+    
+    # Prueba
+    
+    # Sharpe ratio prueba
+    rend_log_p = np.log(df_prueba['capital acumulado'][:-1].values / df_prueba['capital acumulado'][1:].values)
+    sharpe_num_p = rend_log_p.mean() - rf
+    sharpe_denom_p = rend_log_p.std()
+    sharpe_p = sharpe_num_p / sharpe_denom_p
+
+    # Sortino compra prueba
+    # Numerador 
+    s_buy_p = df_prueba.loc[df_prueba['operacion'] == 'compra']
+    rend_log_b_p = np.log(s_buy_p['capital acumulado'][:-1].values / s_buy_p['capital acumulado'][1:].values)
+    # Denominador
+    tdd_sb_p = rend_log_b_p - rf
+    tdd_sb_p[tdd_sb_p > 0] = 0
+    # Final
+    sortino_b_p = (rend_log_b_p.mean() - rf) / (((tdd_sb_p*2).mean())*0.5)
+    
+    # Sortino venta prueba
+    # Numerador
+    s_sell_p = df_prueba.loc[df_prueba['operacion'] == 'venta']
+    rend_log_s_p = np.log(s_sell_p['capital acumulado'][:-1].values / s_sell_p['capital acumulado'][1:].values)
+    # Denominador
+    tdd_ss_p = rend_log_s_p - rf
+    tdd_ss_p[tdd_ss_p > 0] = 0
+    # Final
+    sortino_s_p = (rend_log_s_p.mean() - rf) / (((tdd_ss_p*2).mean())*0.5)
+    
+    
+    # Métricas
+    metrica = pd.DataFrame({'métricas': ['sharpe', 'sortino_b', 'sortino_s']})
+    valor_bt = pd.DataFrame({'valor bt': [(sharpe_bt), (sortino_b_bt), (sortino_s_bt)]})
+    df_mad1 = pd.merge(metrica, valor_bt, left_index = True, right_index = True)
+    
+    valor_p = pd.DataFrame({'valor prueba': [(sharpe_p), (sortino_b_p), (sortino_s_p)]})
+    descripcion = pd.DataFrame({'descripción': ['Sharpe Ratio', 'Sortino Ratio para Posiciones de Compra', 'Sortino Ratio para Posiciones de Venta']})
+    df_mad2 = pd.merge(valor_p, descripcion, left_index = True, right_index = True)
+    
+    df_MAD = pd.merge(df_mad1, df_mad2, left_index = True, right_index = True)
+    
+    return df_MAD
+    
+
+
+
+
+
+
+
+
+
+
