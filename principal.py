@@ -169,3 +169,12 @@ print(df_prueba)
 vn.v_hist_sharpe(hist_sharpe)
 vn.capital_backtest(df_backtest)
 vn.capital_prueba(df_prueba)
+
+#%%
+# Métricas de atribución al desempeño
+mad = fn.f_stat_mad(df_backtest, df_prueba)
+
+
+
+
+
