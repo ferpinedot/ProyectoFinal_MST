@@ -397,7 +397,29 @@ def capital_backtest(df_backtest):
     plt.ylabel('Capital')
     plt.xlabel('Año')
     plt.show()
+    
+    
+def capital_prueba(df_entrenamiento):
+    """
+    
+    Visualización de capital acumulado en el perido de entrenamiento 
 
+    Parameters
+    ----------
+    param_data : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    df_data = df_entrenamiento['capital acumulado']
+    plt.plot(df_data)
+    plt.title('Capital Acumulado Entrenamiento')
+    plt.ylabel('Capital')
+    plt.xlabel('Año')
+    plt.show()
     
     
     
