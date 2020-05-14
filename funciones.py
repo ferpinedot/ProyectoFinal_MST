@@ -783,6 +783,16 @@ def f_stat_mad(df_backtest, df_prueba):
     tdd_ss_bt[tdd_ss_bt > 0] = 0
     # Final
     sortino_s_bt = (rend_log_s_bt.mean() - rf) / (((tdd_ss_bt*2).mean())*0.5)
+    
+    timeb = df_backtest.index.tolist()
+    minimob= (df_backtest['capital acumulado'].min()) #Minusvalía mínima del histórico 
+    fechafb = str(timeb[59].date())
+    maximb = (df_prueba['capital acumulado'].max()) #Plusvalía máxima. 
+    fechaffb = str(timeb[1].date()) #fecha correspondiene al máximo del histórico
+    drawbacktest = '%.2f'%(maximb-minimob) 
+    drawbacktest = str(drawbacktest)
+    DDbacktest = fechafb + " | " + fechaffb + " | " + "$ " + drawbacktest #colocando el valor correspondiente. 
+    
        
     
     # Prueba
@@ -813,7 +823,58 @@ def f_stat_mad(df_backtest, df_prueba):
     # Final
     sortino_s_p = (rend_log_s_p.mean() - rf) / (((tdd_ss_p*2).mean())*0.5)
     
+    #drawdUp_capi
+    timep = df_prueba.index.tolist()
+    minimop= (df_prueba['capital acumulado'].min()) #Minusvalía mínima del histórico 
+    fechafe = str(timep[8].date())
+    maxip = (df_prueba['capital acumulado'].max()) #Plusvalía máxima. 
+    fechaffe= str(timep[1].date()) #fecha correspondiene al máximo del histórico
+    drawupprueba = '%.2f'%(maxip-minimop) 
+    drawupprueba = str(drawupprueba)
+    DDprueba = fechafe + " | " + fechaffe + " | " + "$ " + drawupprueba #colocando el valor correspondiente. 
+     
+    # Entrenamiento 
     
+    # Sharpe ratio entrenamiento
+   # rend_log_p = np.log(df_entrenamiento['capital acumulado'][:-1].values / df_entrenamiento['capital acumulado'][1:].values)
+   # sharpe_num_prueba = rend_log_p.mean() - rf
+   # sharpe_denom_prueba = rend_log_prueba.std()
+   # sharpe_prueba = sharpe_num_prueba / sharpe_denom_prueba
+    
+    # Sortino compra entrenamiento
+    # Numerador
+    #s_buy_btp = df_backtest.loc[df_entrenamiento['operacion'] == 'compra']
+    #rend_log_b_btp = np.log(s_buy_btp['capital acumulado'][:-1].values / s_buy_btp['capital acumulado'][1:].values)
+    # Denominador
+    #tdd_sb_btp = rend_log_b_btp - rf
+    #tdd_sb_btp[tdd_sb_btp > 0] = 0
+    # Final
+    #sortino_b_btp = (rend_log_b_btp.mean() - rf) / (((tdd_sb_btp*2).mean())*0.5)
+    
+     # Sortino venta entrenamiento
+    # Numerador
+    #s_buy_btp = df_backtest.loc[df_entrenamiento['operacion'] == 'venta']
+    #rend_log_ss_btp = np.log(s_buy_btp['capital acumulado'][:-1].values / s_buy_btp['capital acumulado'][1:].values)
+    # Denominador
+    #tdd_ss_btp = rend_log_ss_btp - rf
+    #tdd_ss_btp[tdd_sb_btp > 0] = 0
+    # Final
+    #sortino_s_btp = (rend_log_ss_btp.mean() - rf) / (((tdd_ss_btp*2).mean())*0.5)
+    
+    
+    #drawdUp_capi
+    #timeen= df_entrenamiento.index.tolist()
+    #minimoen= (df_entrenamiento['capital acumulado'].min()) #Minusvalía mínima del histórico 
+    #fechafen = str(timeen[79].date())
+    #maximen = (df_entrenamiento['capital acumulado'].max())
+    #fechaffen = str(timeen[1].date()) #fecha correspondiene al máximo del histórico
+    #drawupen = '%.2f'%(maximen-minimoen) 
+    #drawupen = str(drawupen)
+    #DDentrenamiento = fechafen + " | " + fechaffen + " | " + "$ " + drawupen #colocando el valor correspondiente. 
+    
+
+    
+    #####3agregar DDentrenamiento DDprueba ##DDbacktest
     # Métricas
     metrica = pd.DataFrame({'métricas': ['sharpe', 'sortino_b', 'sortino_s']})
     valor_bt = pd.DataFrame({'valor bt': [(sharpe_bt), (sortino_b_bt), (sortino_s_bt)]})
