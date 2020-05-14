@@ -175,7 +175,7 @@ vn.capital_prueba(df_prueba)
 vn.capital_entrenamiento(df_entrenamiento)
 #%%
 # Métricas de atribución al desempeño
-mad = fn.f_stat_mad(df_backtest, df_prueba)
+mad = fn.f_stat_mad(df_backtest, df_entrenamiento, df_prueba)
 
 
 
