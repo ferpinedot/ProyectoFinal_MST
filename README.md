@@ -1,7 +1,7 @@
 # Proyecto Final
 Equipo 5: 
 - Oscar Flores
-- Fernnada Pinedo 
+- Fernanda Pinedo 
 - Francisco Rodríguez 
 
 ## Se analiza el comportamiento del EUR_USD durante el comunicado del indicador FED INTEREST RATE DECISION de la economía USA
