@@ -165,6 +165,9 @@ print(df_decisiones)
 df_prueba = fn.f_df_backtest(testing_data, testing_clasification, df_decisiones)
 print(df_prueba)
 
+df_entrenamiento = fn.f_df_backtest(training_data, training_clasification, df_decisiones)
+df_entrenamiento
+
 # Gráfica de convergencia 
 vn.v_hist_sharpe(hist_sharpe)
 vn.capital_backtest(df_backtest)
