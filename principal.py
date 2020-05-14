@@ -12,6 +12,7 @@ Created on Mon Apr 27 15:28:55 2020
 # -- repositorio: https://github.com/OscarFlores-IFi/proyecto_equipo5
 # -- ------------------------------------------------------------------------------------ -- #
 from time import time
+import warnings
 
 import funciones as fn
 import visualizaciones as vn
@@ -22,6 +23,7 @@ import matplotlib.pyplot as plt
 
 from procesos import Genetico
 
+warnings.filterwarnings("ignore")
 gen = Genetico.genetico
 
 # Leer el archivo: Indicador económico USA
@@ -120,7 +122,7 @@ filename = 'genetico.sav'
 
 # optimización considerando todo el timepo (no separado Train de Test).
 # EN CASO DE QUE NO EXISTA GENETICO.SAV, EJECUTAR LA SIGUIENTE LINEA:
-[padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(data, filename =filename)
+#[padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(data, filename =filename)
 [padres,hist_mean,hist_std,hist_sharpe,hist_padres] = pickle.load(open(filename,'rb'))
 plt.plot(hist_sharpe[:,-8:]) # Grafica los mejores 8 padres después de entrenarlos
 
@@ -149,7 +151,7 @@ filename = 'genetico2.sav'
 
 # Optimización de periodo de training.
 # EN CASO DE QUE NO EXISTA GENETICO.SAV, EJECUTAR LA SIGUIENTE LINEA:
-[padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(train_data, filename = filename)
+#[padres,hist_mean,hist_std,hist_sharpe,hist_padres] = gen(train_data, filename = filename)
 [padres,hist_mean,hist_std,hist_sharpe,hist_padres] = pickle.load(open(filename,'rb'))
 plt.plot(hist_sharpe[:,-8:]) # Grafica los mejores 8 padres después del entrenamiento.
 
