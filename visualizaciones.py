@@ -398,8 +398,6 @@ def capital_backtest(df_backtest):
     plt.show()
 
     
-    
-    
 def capital_prueba(df_prueba):
     """
     Visualiación del capital acumulado en el periodo de prueba
@@ -418,6 +416,7 @@ def capital_prueba(df_prueba):
     plt.ylabel('Capital')
     plt.xlabel('Año')
     plt.show()
+    
     
 def capital_entrenamiento(df_entrenamiento):
     """
