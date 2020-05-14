@@ -379,16 +379,15 @@ def v_hist_sharpe(hist_sharpe):
     
 def capital_backtest(df_backtest):
     """
-    Visualiación del capital acumulado en el periodo de entrenamiento
+    Visualiación del capital acumulado en el backtest 
 
     Parameters
     ----------
-    param_data : TYPE
-        DESCRIPTION.
+    df_backtest: Data frame con la información del backtest 
 
     Returns
     -------
-    None.
+    Gráfica del capital acumulado del backtest
 
     """
     df_data = pd.DataFrame(df_backtest['capital acumulado'])
@@ -403,22 +402,40 @@ def capital_backtest(df_backtest):
     
 def capital_prueba(df_prueba):
     """
-    
-    Visualización de capital acumulado en el perido de prueba 
-
+    Visualiación del capital acumulado en el periodo de prueba
     Parameters
     ----------
-    param_data : TYPE
-        DESCRIPTION.
+    df_backtest: Data frame con la información del periodo de prueba
 
     Returns
     -------
-    None.
+    Gráfica del capital acumulado en el periodo de prueba
 
     """
     df_data = pd.DataFrame(df_prueba['capital acumulado'])
     plt.plot(df_data)
     plt.title('Capital Acumulado Prueba')
+    plt.ylabel('Capital')
+    plt.xlabel('Año')
+    plt.show()
+    
+def capital_entrenamiento(df_entrenamiento):
+    """
+    
+    Visualización de capital acumulado en el perido de entrenamiento
+
+    Parameters
+    ----------
+    param_data : DataFrame con información del periodo de entrenamiento 
+
+    Returns
+    -------
+    gráfica del acumulado en el periodo de entrenamiento
+
+    """
+    df_data = pd.DataFrame(df_entrenamiento['capital acumulado'])
+    plt.plot(df_data)
+    plt.title('Capital Acumulado Entrenamiento')
     plt.ylabel('Capital')
     plt.xlabel('Año')
     plt.show()
