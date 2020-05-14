@@ -777,6 +777,7 @@ def f_stat_mad(df_backtest, df_entrenamiento, df_prueba):
     sortino_b_bt = (rend_log_b_bt.mean() - rf) / (((tdd_sb_bt*2).mean())*0.5)
     
     # Sortino venta backtest 
+    # Numerador
     s_sell_bt = df_backtest.loc[df_backtest['operacion'] == 'venta'] 
     rend_log_s_bt = np.log(s_sell_bt['capital acumulado'][:-1].values / s_sell_bt['capital acumulado'][1:].values)     
     # Denominador
@@ -785,64 +786,39 @@ def f_stat_mad(df_backtest, df_entrenamiento, df_prueba):
     # Final
     sortino_s_bt = (rend_log_s_bt.mean() - rf) / (((tdd_ss_bt*2).mean())*0.5)
     
-    timeb = df_backtest.index.tolist()
-    minimob= (df_backtest['capital acumulado'].min()) #Minusvalía mínima del histórico 
-    fechafb = str(timeb[59].date())
-    maximb = (df_prueba['capital acumulado'].max()) #Plusvalía máxima. 
-    fechaffb = str(timeb[1].date()) #fecha correspondiene al máximo del histórico
-    drawbacktest = '%.2f'%(maximb-minimob) 
-    drawbacktest = str(drawbacktest)
-    DDbacktest = fechafb + " | " + fechaffb + " | " + "$ " + drawbacktest #colocando el valor correspondiente. 
-    
-    
-    
-    
     
     # Entrenamiento 
-    
     # Sharpe ratio entrenamiento
-    rend_log_p = np.log(df_entrenamiento['capital acumulado'][:-1].values / df_entrenamiento['capital acumulado'][1:].values)
-    sharpe_num_prueba = rend_log_p.mean() - rf
-    sharpe_denom_prueba = rend_log_prueba.std()
-    sharpe_prueba = sharpe_num_prueba / sharpe_denom_prueba
+    rend_log_e = np.log(df_entrenamiento['capital acumulado'][:-1].values / df_entrenamiento['capital acumulado'][1:].values)
+    # Numerador
+    sharpe_num_e = rend_log_e.mean() - rf
+    # Denominador
+    sharpe_denom_e = rend_log_e.std()
+    # Final
+    sharpe_e = sharpe_num_e / sharpe_denom_e
     
     # Sortino compra entrenamiento
     # Numerador
-    s_buy_btp = df_backtest.loc[df_entrenamiento['operacion'] == 'compra']
-    rend_log_b_btp = np.log(s_buy_btp['capital acumulado'][:-1].values / s_buy_btp['capital acumulado'][1:].values)
+    s_buy_e = df_entrenamiento.loc[df_entrenamiento['operacion'] == 'compra']
+    rend_log_sb_e = np.log(s_buy_e['capital acumulado'][:-1].values / s_buy_e['capital acumulado'][1:].values)
     # Denominador
-    tdd_sb_btp = rend_log_b_btp - rf
-    tdd_sb_btp[tdd_sb_btp > 0] = 0
+    tdd_sb_e = rend_log_e - rf
+    tdd_sb_e[tdd_sb_e > 0] = 0
     # Final
-    sortino_b_btp = (rend_log_b_btp.mean() - rf) / (((tdd_sb_btp*2).mean())*0.5)
+    sortino_b_e = (rend_log_sb_e.mean() - rf) / (((tdd_sb_e*2).mean())*0.5)
     
-     # Sortino venta entrenamiento
+    # Sortino venta entrenamiento
     # Numerador
-    s_buy_btp = df_backtest.loc[df_entrenamiento['operacion'] == 'venta']
-    rend_log_ss_btp = np.log(s_buy_btp['capital acumulado'][:-1].values / s_buy_btp['capital acumulado'][1:].values)
-    # Denominador
-    tdd_ss_btp = rend_log_ss_btp - rf
-    tdd_ss_btp[tdd_sb_btp > 0] = 0
-     Final
-    sortino_s_btp = (rend_log_ss_btp.mean() - rf) / (((tdd_ss_btp*2).mean())*0.5)
-    
-    
-    drawdUp_capi
-    timeen= df_entrenamiento.index.tolist()
-    minimoen= (df_entrenamiento['capital acumulado'].min()) #Minusvalía mínima del histórico 
-    fechafen = str(timeen[79].date())
-    maximen = (df_entrenamiento['capital acumulado'].max())
-    fechaffen = str(timeen[1].date()) #fecha correspondiene al máximo del histórico
-    drawupen = '%.2f'%(maximen-minimoen) 
-    drawupen = str(drawupen)
-    DDentrenamiento = fechafen + " | " + fechaffen + " | " + "$ " + drawupen #colocando el valor correspondiente. 
-    
-
-    
-    
+    s_sell_e = df_entrenamiento.loc[df_entrenamiento['operacion'] == 'venta']
+    rend_log_ss_e = np.log(s_sell_e['capital acumulado'][:-1].values / s_sell_e['capital acumulado'][1:].values)
+    # Denominador 
+    tdd_ss_e = rend_log_ss_e - rf
+    tdd_ss_e[tdd_ss_e > 0] = 0
+    # Final
+    sortino_s_e = (rend_log_ss_e.mean() - rf) / (((tdd_ss_e*2).mean())*0.5)
+       
     
     # Prueba
-    
     # Sharpe ratio prueba
     rend_log_p = np.log(df_prueba['capital acumulado'][:-1].values / df_prueba['capital acumulado'][1:].values)
     sharpe_num_p = rend_log_p.mean() - rf
@@ -869,39 +845,22 @@ def f_stat_mad(df_backtest, df_entrenamiento, df_prueba):
     # Final
     sortino_s_p = (rend_log_s_p.mean() - rf) / (((tdd_ss_p*2).mean())*0.5)
     
-    #drawdUp_capi
-    timep = df_prueba.index.tolist()
-    minimop= (df_prueba['capital acumulado'].min()) #Minusvalía mínima del histórico 
-    fechafe = str(timep[8].date())
-    maxip = (df_prueba['capital acumulado'].max()) #Plusvalía máxima. 
-    fechaffe= str(timep[1].date()) #fecha correspondiene al máximo del histórico
-    drawupprueba = '%.2f'%(maxip-minimop) 
-    drawupprueba = str(drawupprueba)
-    DDprueba = fechafe + " | " + fechaffe + " | " + "$ " + drawupprueba #colocando el valor correspondiente. 
-    
-    
-    
-    #####3agregar DDentrenamiento DDprueba ##DDbacktest
+   
     # Métricas
     metrica = pd.DataFrame({'métricas': ['sharpe', 'sortino_b', 'sortino_s']})
     valor_bt = pd.DataFrame({'valor bt': [(sharpe_bt), (sortino_b_bt), (sortino_s_bt)]})
     df_mad1 = pd.merge(metrica, valor_bt, left_index = True, right_index = True)
     
     valor_p = pd.DataFrame({'valor prueba': [(sharpe_p), (sortino_b_p), (sortino_s_p)]})
-    descripcion = pd.DataFrame({'descripción': ['Sharpe Ratio', 'Sortino Ratio para Posiciones de Compra', 'Sortino Ratio para Posiciones de Venta']})
-    df_mad2 = pd.merge(valor_p, descripcion, left_index = True, right_index = True)
+    valor_e = pd.DataFrame({'valor entrenamiento': [(sharpe_e), (sortino_b_e), (sortino_s_e)]})
+    df_mad2 = pd.merge(valor_p, valor_e, left_index = True, right_index = True)
     
-    df_MAD = pd.merge(df_mad1, df_mad2, left_index = True, right_index = True)
+    df_metrs = pd.merge(df_mad1, df_mad2, left_index = True, right_index = True)
+
+    descripcion = pd.DataFrame({'descripción': ['Sharpe Ratio', 'Sortino Ratio para Posiciones de Compra', 'Sortino Ratio para Posiciones de Venta']})
+    df_MAD = pd.merge(df_metrs, descripcion, left_index = True, right_index = True)
     
     return df_MAD
     
-
-
-
-
-
-
-
-
 
 
